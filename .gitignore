@@ -8,3 +8,15 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
+figwheel_server.log
+
+### Emacs ###
+# -*- mode: gitignore; -*-
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*

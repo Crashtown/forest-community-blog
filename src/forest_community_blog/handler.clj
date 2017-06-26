@@ -51,7 +51,7 @@
   (routes
    (GET    "/" [] (if-let [post (get-post id)]
                     (response post)
-                    (status (response {:fail (str "post #" id " is not found")}) 404)))
+                    (response {:fail (str "post #" id " is not found")} 404)))
    (PUT    "/" {{body :body} :body}
            (do (update-post (Integer. id) body)
                (response (get-post id))))
@@ -64,6 +64,7 @@
   (context "/:id" [id] (post-routes id)))
 
 (defroutes app-routes
+  (route/resources "/")
   (context "/posts" [] posts-routes)
   (route/not-found "Not Found"))
 

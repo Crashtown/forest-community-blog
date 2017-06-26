@@ -1,0 +1,1 @@
+{:rename-macros {}, :renames {}, :externs {console {log {}}}, :use-macros {}, :excludes #{}, :name forest-community-blog.core, :imports nil, :requires {r reagent.core, reagent.core reagent.core}, :uses nil, :require-macros {r reagent.core, reagent.core reagent.core}, :doc nil}
