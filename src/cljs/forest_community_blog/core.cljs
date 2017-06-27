@@ -22,23 +22,21 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; STATE
 
-(defonce posts (r/atom []))
 (defonce app-state (r/atom {:page :blog}))
-(defonce current-post (r/atom nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EFFECTS
 
-(defn get-posts! []
+(defn get-posts! [posts]
   (go (let [response (<! (http/get "http://localhost:3000/posts"
                                    {:with-credentials? false
                                     :headers {"content-type" "application/json"}}))]
         (reset! posts (:body response)))))
 
-(defn get-post! [id]
+(defn get-post! [post id]
   (go (let [response (<! (http/get (str "http://localhost:3000/posts/" id)
                                    {:with-credentials? false
                                     :headers {"content-type" "application/json"}}))]
-        (reset! current-post (:body response)))))
+        (reset! post (:body response)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; COMPONENTS
 
@@ -84,7 +82,7 @@
     [:span.glyphicon.glyphicon-chevron-right]]
    [:hr]])
 
-(defn blog-entries []
+(defn blog-entries [posts]
   [:div.col-md-8.col-md-offset-2
    (for [post @posts]
      ^{:key (:id post)} [blog-entry post])])
@@ -115,17 +113,27 @@
    [categories]])
 
 (defn about []
-  [:div [:h1 "About Page"]])
-
-(defn blog []
-  (get-posts!)
   [:div.container
    [:div.row
-    [blog-entries]
-    ]])
+    [:div.col-md-8.col-md-offset-2
+     [:h1 "About Page"]]]])
+
+(defn blog []
+  (let [posts (r/atom [])]
+    (get-posts! posts)
+    (fn []
+      [:div.container
+       [:div.row
+        [blog-entries posts]]])))
 
 (defn post [id]
-  [:div (str "POST # " id)])
+  (let [post (r/atom nil)]
+    (get-post! post id)
+    (fn [id]
+      [:div.container
+       [:div.row
+        [:div.col-md-8.col-md-offset-2
+         (str "POST # " (:id @post))]]])))
 
 (defn root-component []
   [:div.root
