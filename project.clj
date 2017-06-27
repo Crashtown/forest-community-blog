@@ -13,7 +13,8 @@
                  [cheshire "5.7.1"]
                  [reagent "0.6.2"]
                  [cljs-http "0.1.43"]
-                 [ring-cors "0.1.11"]]
+                 [ring-cors "0.1.11"]
+                 [secretary "1.2.3"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-figwheel "0.5.10"]]
   :cljsbuild {:builds [{:id "dev"

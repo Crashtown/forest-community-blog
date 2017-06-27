@@ -75,3 +75,5 @@
     (is (= (:status response) 404))))
 
 (defn negative [x] (- 0 x))
+
+-3

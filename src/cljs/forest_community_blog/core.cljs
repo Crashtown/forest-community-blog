@@ -1,12 +1,25 @@
 (ns cljs.forest-community-blog.core
-  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require-macros [cljs.core.async.macros :refer [go]]
+                   [secretary.core :refer [defroute]])
+  (:import goog.History)
   (:require [reagent.core :as r]
             [cljs-http.client :as http]
-            [cljs.core.async :refer [<!]]))
+            [cljs.core.async :refer [<!]]
+            [secretary.core :as secretary]
+            [goog.events :as events]
+            [goog.history.EventType :as EventType]))
 
-(.log js/console "Zdarova chuvachok")
+(declare current-page)
+
+(.log js/console "Loading forest-community blog...")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; STATE
 
 (defonce posts (r/atom []))
+(defonce app-state (r/atom {:page :blog}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EFFECTS
 
 (defn get-posts! []
   (go (let [response (<! (http/get "http://localhost:3000/posts"
@@ -15,6 +28,8 @@
         (reset! posts (:body response)))))
 
 (get-posts!)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; COMPONENTS
 
 (defn navigation []
   [:nav.navbar.navbar-inverse.navbar-fixed-top {:role "navigation"}
@@ -90,7 +105,15 @@
    [search]
    [categories]])
 
-(defn page-content []
+(defn home []
+  [:div [:h1 "Home Page"]
+   [:a {:href "#/about"} "about page"]])
+
+(defn about []
+  [:div [:h1 "About Page"]
+   [:a {:href "#/"} "home page"]])
+
+(defn blog []
   [:div.container
    [:div.row
     [blog-entries-column]
@@ -99,10 +122,37 @@
 (defn root-component []
   [:div.root
    [navigation]
-   [page-content]])
+   [current-page]])
 
-(defn ^:export start []
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ROUTING
+
+(defn hook-browser-navigation! []
+  (doto (History.)
+    (events/listen
+     EventType/NAVIGATE
+     (fn [event]
+       (secretary/dispatch! (.-token event))))
+    (.setEnabled true)))
+
+(hook-browser-navigation!)
+
+(secretary/set-config! :prefix "#")
+
+(defroute "/" []
+  (swap! app-state assoc :page :blog))
+
+(defroute "/about" []
+  (swap! app-state assoc :page :about))
+
+(defmulti current-page #(@app-state :page))
+(defmethod current-page :blog [] [blog])
+(defmethod current-page :about [] [about])
+(defmethod current-page :default [] [:div])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; INIT
+
+(defn ^:export init []
   (r/render [root-component]
             (js/document.getElementById "app")))
 
-(.addEventListener js/window "DOMContentLoaded" start)
+(.addEventListener js/window "DOMContentLoaded" init)
