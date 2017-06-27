@@ -1,15 +1,21 @@
 (ns cljs.forest-community-blog.core
   (:require-macros [cljs.core.async.macros :refer [go]]
-                   [secretary.core :refer [defroute]])
+                   [secretary.core :refer [defroute]]
+                   [cljs.core.match :refer [match]])
   (:import goog.History)
   (:require [reagent.core :as r]
             [cljs-http.client :as http]
             [cljs.core.async :refer [<!]]
             [secretary.core :as secretary]
             [goog.events :as events]
-            [goog.history.EventType :as EventType]))
+            [goog.history.EventType :as EventType]
+            [cljs.core.match]))
 
-(declare current-page)
+(declare current-page
+         post
+         about-path
+         blog-path
+         post-path)
 
 (.log js/console "Loading forest-community blog...")
 
@@ -18,6 +24,7 @@
 
 (defonce posts (r/atom []))
 (defonce app-state (r/atom {:page :blog}))
+(defonce current-post (r/atom nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EFFECTS
 
@@ -27,7 +34,11 @@
                                     :headers {"content-type" "application/json"}}))]
         (reset! posts (:body response)))))
 
-(get-posts!)
+(defn get-post! [id]
+  (go (let [response (<! (http/get (str "http://localhost:3000/posts/" id)
+                                   {:with-credentials? false
+                                    :headers {"content-type" "application/json"}}))]
+        (reset! current-post (:body response)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; COMPONENTS
 
@@ -42,13 +53,11 @@
       [:span.icon-bar]
       [:span.icon-bar]
       [:span.icon-bar]]
-     [:a.navbar-brand {:href "#"}
-      "Forest community"]]
+     [:a.navbar-brand {:href (blog-path)}
+      "Forest Сommunity"]]
     [:div#bs-example-navbar-collapse-1.collapse.navbar-collapse
      [:ul.nav.navbar-nav
-      [:li [:a {:href "#"} "About"]]
-      [:li [:a {:href "#"} "Software Development"]]
-      [:li [:a {:href "#"} "Music Production"]]]]]])
+      [:li [:a {:href (about-path)} "About"]]]]]])
 
 (defn pager []
   [:ul.pager
@@ -57,7 +66,7 @@
    [:li.next
     [:a {:href "#"} "Newer"]]])
 
-(defn blog-post [{:keys [body
+(defn blog-entry [{:keys [body
                          title
                          created_at
                          updated_at
@@ -70,15 +79,15 @@
     [:span.glyphicon.glyphicon-time] created_at]
    (when head_image [:img.img-responsive {:src head_image :alt ""}])
    [:p body]
-   [:a.btn.btn-primary {:href "#"}
+   [:a.btn.btn-primary {:href (post-path {:id id})}
     "Read More"
     [:span.glyphicon.glyphicon-chevron-right]]
    [:hr]])
 
-(defn blog-entries-column []
+(defn blog-entries []
   [:div.col-md-8.col-md-offset-2
    (for [post @posts]
-     ^{:key (:id post)} [blog-post post])])
+     ^{:key (:id post)} [blog-entry post])])
 
 (defn search []
   [:div.well
@@ -105,19 +114,18 @@
    [search]
    [categories]])
 
-(defn home []
-  [:div [:h1 "Home Page"]
-   [:a {:href "#/about"} "about page"]])
-
 (defn about []
-  [:div [:h1 "About Page"]
-   [:a {:href "#/"} "home page"]])
+  [:div [:h1 "About Page"]])
 
 (defn blog []
+  (get-posts!)
   [:div.container
    [:div.row
-    [blog-entries-column]
+    [blog-entries]
     ]])
+
+(defn post [id]
+  [:div (str "POST # " id)])
 
 (defn root-component []
   [:div.root
@@ -138,16 +146,20 @@
 
 (secretary/set-config! :prefix "#")
 
-(defroute "/" []
+(defroute blog-path "/" []
   (swap! app-state assoc :page :blog))
-
-(defroute "/about" []
+(defroute  about-path "/about" []
   (swap! app-state assoc :page :about))
+(defroute  post-path "/posts/:id" [id]
+  (swap! app-state assoc :page [:post id]))
 
-(defmulti current-page #(@app-state :page))
-(defmethod current-page :blog [] [blog])
-(defmethod current-page :about [] [about])
-(defmethod current-page :default [] [:div])
+(defn current-page []
+  (let [page (@app-state :page)]
+    (match page
+           :blog [blog]
+           [:post id] [post id]
+           :about [about]
+           :else [:div])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; INIT
 

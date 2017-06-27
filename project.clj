@@ -14,7 +14,8 @@
                  [reagent "0.6.2"]
                  [cljs-http "0.1.43"]
                  [ring-cors "0.1.11"]
-                 [secretary "1.2.3"]]
+                 [secretary "1.2.3"]
+                 [org.clojure/core.match "0.3.0-alpha4"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-figwheel "0.5.10"]]
   :cljsbuild {:builds [{:id "dev"
