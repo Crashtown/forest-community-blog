@@ -17,6 +17,7 @@
   (sql/db-do-commands db
                       [(sql/create-table-ddl :posts
                                              [[:id :serial]
+                                              [:title :varchar]
                                               [:body :text]
                                               [:created_at :timestamp]
                                               [:updated_at :timestamp]])]))
@@ -34,34 +35,45 @@
 (defn get-posts []
   (sql/query db ["select * from posts;"]))
 
-(defn create-post [body]
-  (first (sql/insert! db :posts {:body body
-                                 :created_at (timestamp)
-                                 :updated_at (timestamp)})))
-
 (defn get-post [id]
   (first (sql/query db [(str "select * from posts where id = " id ";")])))
 
-(defn update-post [id body]
-  (sql/update! db :posts {:body body} ["id = ?" id]))
+(defn create-post [post]
+  (first (sql/insert! db
+                      :posts
+                      {:title (:title post)
+                       :body (:body post)
+                       :created_at (timestamp)
+                       :updated_at (timestamp)})))
+
+(defn update-post [id post]
+  (sql/update! db
+               :posts
+               {:body (:body post)
+                :title (:title post)}
+               ["id = ?" id]))
 
 (defn delete-post [id]
   (sql/delete! db :posts ["id = ?" id]))
 
 (defn post-routes [id]
   (routes
-   (GET    "/" [] (if-let [post (get-post id)]
-                    (response post)
-                    (response {:fail (str "post #" id " is not found")} 404)))
-   (PUT    "/" {{body :body} :body}
-           (do (update-post (Integer. id) body)
+   (GET    "/" []
+           (if-let [post (get-post id)]
+             (response post)
+             (response {:fail (str "post #" id " is not found")} 404)))
+   (PUT    "/" {post :body}
+           (do (update-post (Integer. id) post)
                (response (get-post id))))
-   (DELETE "/" [] (do (delete-post (Integer. id))
-                      (response {:success (str "deleted post #" id)})))))
+   (DELETE "/" []
+           (do (delete-post (Integer. id))
+               (response {:success (str "deleted post #" id)})))))
 
 (defroutes posts-routes
-  (GET     "/" [] (response (get-posts)))
-  (POST    "/" {{body :body} :body} (response (create-post body)))
+  (GET     "/" []
+           (response (get-posts)))
+  (POST    "/" {post :body}
+           (response (create-post post)))
   (context "/:id" [id] (post-routes id)))
 
 (defroutes app-routes

@@ -17,26 +17,19 @@
          blog-path
          post-path)
 
-(.log js/console "Loading forest-community blog...")
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; STATE
 
-(defonce app-state (r/atom {:page :blog}))
+(defonce app-state (r/atom {:page :blog
+                            :posts []
+                            :auth nil}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EFFECTS
 
-(defn get-posts! [posts]
+(defn get-posts! []
   (go (let [response (<! (http/get "http://localhost:3000/posts"
                                    {:with-credentials? false
                                     :headers {"content-type" "application/json"}}))]
-        (reset! posts (:body response)))))
-
-(defn get-post! [post id]
-  (go (let [response (<! (http/get (str "http://localhost:3000/posts/" id)
-                                   {:with-credentials? false
-                                    :headers {"content-type" "application/json"}}))]
-        (reset! post (:body response)))))
+        (swap! app-state assoc :posts (:body response)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; COMPONENTS
 
@@ -64,27 +57,23 @@
    [:li.next
     [:a {:href "#"} "Newer"]]])
 
-(defn blog-entry [{:keys [body
-                         title
-                         created_at
-                         updated_at
-                         head_image
-                         id]}]
+(defn blog-entry [post]
   [:div
-   [:h2 [:a {:href "#"} title]]
-   [:p.lead ["by" [:a {:href "#"} "Anton"]]]
+   [:h2
+    [:a {:href (post-path {:id (:id post)})}
+     (:title post)]]
    [:p
-    [:span.glyphicon.glyphicon-time] created_at]
-   (when head_image [:img.img-responsive {:src head_image :alt ""}])
-   [:p body]
-   [:a.btn.btn-primary {:href (post-path {:id id})}
+    [:span.glyphicon.glyphicon-time] (:created_at post)]
+   (when-let [img (:head_image post)]
+     [:img.img-responsive {:src img :alt ""}])
+   [:p (:body post)]
+   [:a.btn.btn-primary {:href (post-path {:id (:id post)})}
     "Read More"
-    [:span.glyphicon.glyphicon-chevron-right]]
-   [:hr]])
+    [:span.glyphicon.glyphicon-chevron-right]]])
 
 (defn blog-entries [posts]
   [:div.col-md-8.col-md-offset-2
-   (for [post @posts]
+   (for [post posts]
      ^{:key (:id post)} [blog-entry post])])
 
 (defn search []
@@ -116,24 +105,35 @@
   [:div.container
    [:div.row
     [:div.col-md-8.col-md-offset-2
-     [:h1 "About Page"]]]])
+     [:h1 "About"]
+     [:p (str "Hello, my name is Anton Žiliuk. "
+              "I am systems engineer who interested in declarative programming. "
+              "At my free time I compose electronic music and techno. "
+              "This page contains my thoughts, experiments, records. "
+              "My favorite styles are Ambient Techno, Hardtek/tribe and Dub. "
+              "Papabless! And any feedback is appreciated! ")]
+
+      [:p "crashtown.pal@gmail.com"]]]])
 
 (defn blog []
-  (let [posts (r/atom [])]
-    (get-posts! posts)
-    (fn []
-      [:div.container
-       [:div.row
-        [blog-entries posts]]])))
+  (let [posts (@app-state :posts)]
+    [:div.container
+     [:div.row
+      [blog-entries posts]]]))
 
-(defn post [id]
-  (let [post (r/atom nil)]
-    (get-post! post id)
-    (fn [id]
-      [:div.container
-       [:div.row
-        [:div.col-md-8.col-md-offset-2
-         (str "POST # " (:id @post))]]])))
+(defn post [id0]
+  (let [id (js/parseInt id0)
+        posts (@app-state :posts)
+        post (first (filterv #(= (:id %) id) posts))]
+    [:div.container
+     [:div.row
+      [:div.col-md-8.col-md-offset-2
+       [:p (:body post)]]]]))
+
+(defn login-form []
+  [:input {:type "password"
+           :value (@app-state :auth)
+           :on-change #(swap! app-state assoc :auth (-> % .-target .-value))}])
 
 (defn root-component []
   [:div.root
@@ -150,16 +150,14 @@
        (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
-(hook-browser-navigation!)
-
-(secretary/set-config! :prefix "#")
-
 (defroute blog-path "/" []
   (swap! app-state assoc :page :blog))
 (defroute  about-path "/about" []
   (swap! app-state assoc :page :about))
 (defroute  post-path "/posts/:id" [id]
   (swap! app-state assoc :page [:post id]))
+(defroute "/login" []
+  (swap! app-state assoc :page :login))
 
 (defn current-page []
   (let [page (@app-state :page)]
@@ -167,6 +165,7 @@
            :blog [blog]
            [:post id] [post id]
            :about [about]
+           :login [login-form]
            :else [:div])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; INIT
@@ -174,5 +173,13 @@
 (defn ^:export init []
   (r/render [root-component]
             (js/document.getElementById "app")))
+
+(hook-browser-navigation!)
+
+(secretary/set-config! :prefix "#")
+
+(get-posts!)
+
+(.log js/console "Loading forest-community blog...")
 
 (.addEventListener js/window "DOMContentLoaded" init)
