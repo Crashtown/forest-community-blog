@@ -8,13 +8,8 @@
                             :posts []
                             :auth nil}))
 
-;; EFFECTS
-
 (defn ^:export get-posts! []
   (go (let [response(<! (http/get "http://localhost:3000/posts"
                                    {:with-credentials? false
                                     :headers {"content-type" "application/json"}}))]
         (swap! app-state assoc :posts (:body response)))))
-
-(defn set-page! [page]
-  (swap! app-state assoc :page page))
