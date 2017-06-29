@@ -1,35 +1,14 @@
 (ns cljs.forest-community-blog.core
   (:require-macros [cljs.core.async.macros :refer [go]]
-                   [secretary.core :refer [defroute]]
                    [cljs.core.match :refer [match]])
-  (:import goog.History)
   (:require [reagent.core :as r]
             [cljs-http.client :as http]
             [cljs.core.async :refer [<!]]
-            [secretary.core :as secretary]
-            [goog.events :as events]
-            [goog.history.EventType :as EventType]
-            [cljs.core.match]))
+            [cljs.core.match]
+            [cljs.forest-community-blog.routes :as routes]
+            [cljs.forest-community-blog.state :refer [app-state get-posts!]]))
 
-(declare current-page
-         post
-         about-path
-         blog-path
-         post-path)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; STATE
-
-(defonce app-state (r/atom {:page :blog
-                            :posts []
-                            :auth nil}))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EFFECTS
-
-(defn get-posts! []
-  (go (let [response (<! (http/get "http://localhost:3000/posts"
-                                   {:with-credentials? false
-                                    :headers {"content-type" "application/json"}}))]
-        (swap! app-state assoc :posts (:body response)))))
+(declare current-page)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; COMPONENTS
 
@@ -44,11 +23,11 @@
       [:span.icon-bar]
       [:span.icon-bar]
       [:span.icon-bar]]
-     [:a.navbar-brand {:href (blog-path)}
+     [:a.navbar-brand {:href (routes/blog-path)}
       "Forest Сommunity"]]
     [:div#bs-example-navbar-collapse-1.collapse.navbar-collapse
      [:ul.nav.navbar-nav
-      [:li [:a {:href (about-path)} "About"]]]]]])
+      [:li [:a {:href (routes/about-path)} "About"]]]]]])
 
 (defn pager []
   [:ul.pager
@@ -60,14 +39,14 @@
 (defn blog-entry [post]
   [:div
    [:h2
-    [:a {:href (post-path {:id (:id post)})}
+    [:a {:href (routes/post-path {:id (:id post)})}
      (:title post)]]
    [:p
     [:span.glyphicon.glyphicon-time] (:created_at post)]
    (when-let [img (:head_image post)]
      [:img.img-responsive {:src img :alt ""}])
    [:p (:body post)]
-   [:a.btn.btn-primary {:href (post-path {:id (:id post)})}
+   [:a.btn.btn-primary {:href (routes/post-path {:id (:id post)})}
     "Read More"
     [:span.glyphicon.glyphicon-chevron-right]]])
 
@@ -128,36 +107,72 @@
     [:div.container
      [:div.row
       [:div.col-md-8.col-md-offset-2
+       [:h2
+        (:title post)]
+       [:p
+        [:span.glyphicon.glyphicon-time] (:created_at post)]
+       (when-let [img (:head-image post)]
+         [:img.img-responsive {:src img :alt ""}])
        [:p (:body post)]]]]))
 
 (defn login-form []
-  [:input {:type "password"
-           :value (@app-state :auth)
-           :on-change #(swap! app-state assoc :auth (-> % .-target .-value))}])
+  [:div.container
+   [:div.row
+    [:div.col-md-8.col-md-offset-2
+     [:p
+      "Auth code:"
+      [:input {:type "password"
+               :value (@app-state :auth)
+               :on-change #(swap! app-state assoc :auth (-> % .-target .-value))}]]]]])
+
+(defn markdown-render [content]
+  [:div {:dangerouslySetInnerHTML
+         {:__html (-> content str js/marked)}}])
+
+(defn highlight-code [html-node]
+  (let [nodes (.querySelectorAll html-node "pre code")]
+    (loop [i (.-length nodes)]
+      (when-not (neg? i)
+        (when-let [item (.item nodes i)]
+          (.highlightBlock js/hljs item))
+        (recur (dec i))))))
+
+(defn markdown-did-mount [this]
+  (let [node (r/dom-node this)]
+    (highlight-code node)))
+
+(defn markdown-component [content]
+  (r/create-class
+   {:reagent-render      markdown-render
+    :component-did-mount markdown-did-mount}))
+
+(defn preview [content]
+  (when (not-empty @content)
+    [markdown-component @content]))
+
+(defn editor [content]
+  [:textarea.form-control
+   {:value     @content
+    :on-change #(reset! content (-> % .-target .-value))}])
+
+(defn new-post []
+  (let [content (r/atom nil)]
+    (fn []
+      [:div
+       [:h1 "Create new post"]
+       [:div.container-fluid
+        [:div.row
+         [:div.col-sm-6
+          [:h3 "Editor"]
+          [editor content]]
+         [:div.col-sm-6
+          [:h3 "Preview"]
+          [preview content]]]]])))
 
 (defn root-component []
   [:div.root
    [navigation]
    [current-page]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ROUTING
-
-(defn hook-browser-navigation! []
-  (doto (History.)
-    (events/listen
-     EventType/NAVIGATE
-     (fn [event]
-       (secretary/dispatch! (.-token event))))
-    (.setEnabled true)))
-
-(defroute blog-path "/" []
-  (swap! app-state assoc :page :blog))
-(defroute  about-path "/about" []
-  (swap! app-state assoc :page :about))
-(defroute  post-path "/posts/:id" [id]
-  (swap! app-state assoc :page [:post id]))
-(defroute "/login" []
-  (swap! app-state assoc :page :login))
 
 (defn current-page []
   (let [page (@app-state :page)]
@@ -166,20 +181,18 @@
            [:post id] [post id]
            :about [about]
            :login [login-form]
+           :new-post [new-post]
            :else [:div])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; INIT
 
-(defn ^:export init []
+(defn ^:export init! []
   (r/render [root-component]
             (js/document.getElementById "app")))
 
-(hook-browser-navigation!)
-
-(secretary/set-config! :prefix "#")
-
-(get-posts!)
+(.addEventListener js/window "DOMContentLoaded" init!)
 
 (.log js/console "Loading forest-community blog...")
 
-(.addEventListener js/window "DOMContentLoaded" init)
+(get-posts!)
+(routes/init!)
