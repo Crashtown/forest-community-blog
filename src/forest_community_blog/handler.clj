@@ -7,88 +7,57 @@
             [ring.middleware.not-modified :refer [wrap-not-modified]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.util.response :refer [response status]]
-            [clojure.java.jdbc :as sql]
-            [clj-time.core :as t]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [forest-community-blog.entities.post :as post]))
 
+(def auth-code (or (System/getenv "FOREST_COMMUNITY_BLOG_SECRET")
+                   "secret"))
 
-(def db (or (System/getenv "DATABASE_URL")
-            "postgresql://localhost:5432/forest_community_blog"))
-
-(defn migrate-db []
-  "eval migrations"
-  (sql/db-do-commands db
-                      [(sql/create-table-ddl :posts
-                                             [[:id :serial]
-                                              [:title :varchar]
-                                              [:body :text]
-                                              [:created_at :timestamp]
-                                              [:updated_at :timestamp]])]))
-
-(defn drop-db []
-  (sql/db-do-commands db [(sql/drop-table-ddl :posts)]))
-
-(defn reset-db []
-  (do (drop-db)
-      (migrate-db)))
-
-(defn timestamp []
-  (java.sql.Timestamp. (.getTime (java.util.Date.))))
+(defn authenticate [req]
+  (println req)
+  req)
 
 (defn get-posts []
-  (sql/query db ["select * from posts;"]))
-
+  (response (post/all)))
 (defn get-post [id]
-  (first (sql/query db [(str "select * from posts where id = " id ";")])))
-
+  (if-let [post (post/get id)]
+    (response post)
+    (-> {:fail (str "post #" id " is not found")}
+        (response)
+        (status 404))))
 (defn create-post [post]
-  (first (sql/insert! db
-                      :posts
-                      {:title (:title post)
-                       :body (:body post)
-                       :created_at (timestamp)
-                       :updated_at (timestamp)})))
-
+  (response (post/create post)))
 (defn update-post [id post]
-  (sql/update! db
-               :posts
-               {:body (:body post)
-                :title (:title post)}
-               ["id = ?" id]))
-
+  (post/update id post)
+  (response (post/get id)))
 (defn delete-post [id]
-  (sql/delete! db :posts ["id = ?" id]))
+  (post/delete id)
+  (response {:success (str "deleted post #" id)}))
 
 (defn post-routes [id]
   (routes
-   (GET    "/" []
-           (if-let [post (get-post id)]
-             (response post)
-             (response {:fail (str "post #" id " is not found")} 404)))
-   (PUT    "/" {post :body}
-           (do (update-post (Integer. id) post)
-               (response (get-post id))))
-   (DELETE "/" []
-           (do (delete-post (Integer. id))
-               (response {:success (str "deleted post #" id)})))))
+   (GET "/" [] (get-post id))
+   (PUT "/" {post :body} (update-post id post))
+   (DELETE "/" [] (delete-post id))))
 
 (defroutes posts-routes
-  (GET     "/" []
-           (response (get-posts)))
-  (POST    "/" {post :body}
-           (response (create-post post)))
-  (context "/:id" [id] (post-routes id)))
+  (GET "/" [] (get-posts))
+  (POST "/" {post :body} (create-post post))
+  (context "/:id" [id] (post-routes (Integer. id))))
 
 (defroutes app-routes
-  (-> (route/resources "/")
-      (wrap-content-type)
-      (wrap-not-modified))
-  (wrap-multipart-params
+  (->
+   (route/resources "/")
+   (wrap-content-type)
+   (wrap-not-modified))
+  (->
    (POST "/upload"
          {{{tempfile :tempfile filename :filename} "file"} :params}
          (println filename)
          (io/copy tempfile (io/file "resources" "public" "uploads" filename))
-         (response {:success (str "uploads/" filename)})))
+         (response {:success (str "uploads/" filename)}))
+   (authenticate)
+   (wrap-multipart-params))
   (context "/posts" [] posts-routes)
   (route/not-found "Not Found"))
 

@@ -3,7 +3,8 @@
             [ring.mock.request :as mock]
             [forest-community-blog.handler :refer :all]
             [cheshire.core :refer [generate-string
-                                   parse-string]]))
+                                   parse-string]]
+            [forest-community-blog.db :refer [reset-db]]))
 
 (defn db-fixture [f]
   (reset-db)
@@ -39,32 +40,35 @@
     (is (= (:body (parse-string body true)) "post about love"))))
 
 (deftest test-get-posts
-  (let [post1 (create-post "love post 1")
-        post2 (create-post "love post 2")
+  (let [post1 (call-create-post "love post 1")
+        post2 (call-create-post "love post 2")
         resp (call-get-posts)
         posts (parse-string (:body resp) true)]
     (is (= (:status resp) 200))
     (is (= (:body (first posts)) "love post 1"))))
 
 (deftest test-get-post
-  (let [post (create-post "post about love")
-        resp (call-get-post (:id post))
+  (let [create-resp (call-create-post "post about love")
+        created-post (parse-string (:body create-resp) true)
+        resp (call-get-post (:id created-post))
         post (parse-string (:body resp) true)
         status (:status resp)]
     (is (= status 200))
     (is (= (:body post) "post about love"))))
 
 (deftest test-update-post
-  (let [post (create-post "post about love")
-        resp (call-update-post (:id post) "no love today boy")
-        updated-post (parse-string (:body resp) true)
-        status (:status resp)]
+  (let [create-resp (call-create-post "post about love")
+        post (parse-string (:body create-resp) true)
+        update-resp (call-update-post (:id post) "no love today boy")
+        updated-post (parse-string (:body update-resp) true)
+        status (:status update-resp)]
     (is (= status 200))
     (is (= (:id post) (:id updated-post)))
     (is (= (:body updated-post) "no love today boy"))))
 
 (deftest test-delete-post
-  (let [post (create-post "post about love")
+  (let [resp (call-create-post "post about love")
+        post (parse-string (:body resp) true)
         delete-resp (call-delete-post (:id post))
         lookup-resp (call-get-post (:id post))]
     (is (= (:status delete-resp) 200))
@@ -73,7 +77,3 @@
 (deftest test-not-found-route
   (let [response (app (mock/request :get "/invalid"))]
     (is (= (:status response) 404))))
-
-(defn negative [x] (- 0 x))
-
--3
