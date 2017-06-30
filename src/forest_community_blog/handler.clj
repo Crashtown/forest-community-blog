@@ -13,9 +13,15 @@
 (def auth-code (or (System/getenv "FOREST_COMMUNITY_BLOG_SECRET")
                    "secret"))
 
-(defn authenticate [req]
-  (println req)
-  req)
+(defn authenticate [handler]
+  (fn [request]
+    (let [auth (get-in request [:headers "auth-code"])]
+      (if (= auth auth-code)
+        (do (println "Authenticated")
+            (handler request))
+        (-> {:fail "unauthenticated"}
+            (response)
+            (status 401))))))
 
 (defn get-posts []
   (response (post/all)))
@@ -48,16 +54,13 @@
 (defroutes app-routes
   (->
    (route/resources "/")
-   (wrap-content-type)
-   (wrap-not-modified))
+   (wrap-routes (comp wrap-content-type wrap-not-modified)))
   (->
    (POST "/upload"
          {{{tempfile :tempfile filename :filename} "file"} :params}
-         (println filename)
          (io/copy tempfile (io/file "resources" "public" "uploads" filename))
          (response {:success (str "uploads/" filename)}))
-   (authenticate)
-   (wrap-multipart-params))
+   (wrap-routes wrap-multipart-params))
   (context "/posts" [] posts-routes)
   (route/not-found "Not Found"))
 

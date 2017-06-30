@@ -12,11 +12,6 @@
 
 (use-fixtures :each db-fixture)
 
-(defn- call-create-post [body]
-  (app (-> (mock/request :post "/posts")
-           (mock/header "content-type" "application/json")
-           (mock/body (generate-string {:body body})))))
-
 (defn- call-get-posts []
   (app (-> (mock/request :get "/posts")
            (mock/header "content-type" "application/json"))))
@@ -25,14 +20,22 @@
   (app (-> (mock/request :get (str "/posts/" id))
            (mock/header "content-type" "application/json"))))
 
+(defn- call-create-post [body]
+  (app (-> (mock/request :post "/posts")
+           (mock/header "content-type" "application/json")
+           (mock/header "auth-code" auth-code)
+           (mock/body (generate-string {:body body})))))
+
 (defn- call-update-post [id body]
   (app (-> (mock/request :put (str "/posts/" id))
            (mock/header "content-type" "application/json")
+           (mock/header "auth-code" auth-code)
            (mock/body (generate-string {:body body})))))
 
 (defn- call-delete-post [id]
   (app (-> (mock/request :delete (str "/posts/" id))
-           (mock/header "content-type" "applocation/json"))))
+           (mock/header "content-type" "applocation/json")
+           (mock/header "auth-code" auth-code))))
 
 (deftest test-create-post
   (let [{:keys [body status]} (call-create-post "post about love")]

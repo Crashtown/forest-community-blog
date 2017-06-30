@@ -12,7 +12,6 @@
       (map->Post)))
 
 (defn- Post->db [post]
-  (println post)
   (clojure.set/rename-keys post {:created-at :created_at
                                  :updated-at :updated_at
                                  :reading-time :reading_time}))
