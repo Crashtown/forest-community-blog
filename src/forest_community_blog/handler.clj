@@ -3,9 +3,13 @@
             [compojure.route :as route]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [ring.middleware.cors :refer [wrap-cors]]
+            [ring.middleware.content-type :refer [wrap-content-type]]
+            [ring.middleware.not-modified :refer [wrap-not-modified]]
+            [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.util.response :refer [response status]]
             [clojure.java.jdbc :as sql]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [clojure.java.io :as io]))
 
 
 (def db (or (System/getenv "DATABASE_URL")
@@ -76,7 +80,15 @@
   (context "/:id" [id] (post-routes id)))
 
 (defroutes app-routes
-  (route/resources "/")
+  (-> (route/resources "/")
+      (wrap-content-type)
+      (wrap-not-modified))
+  (wrap-multipart-params
+   (POST "/upload"
+         {{{tempfile :tempfile filename :filename} "file"} :params}
+         (println filename)
+         (io/copy tempfile (io/file "resources" "public" "uploads" filename))
+         (response {:success (str "uploads/" filename)})))
   (context "/posts" [] posts-routes)
   (route/not-found "Not Found"))
 
