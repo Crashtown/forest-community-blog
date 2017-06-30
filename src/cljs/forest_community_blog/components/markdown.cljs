@@ -1,4 +1,5 @@
-(ns cljs.forest-community-blog.components.markdown)
+(ns cljs.forest-community-blog.components.markdown
+  (:require [reagent.core :as r]))
 
 (defn markdown-render [content]
   [:div {:dangerouslySetInnerHTML
@@ -17,6 +18,7 @@
     (highlight-code node)))
 
 (defn markdown-component [content]
+  (.log js/console content)
   (r/create-class
    {:reagent-render      markdown-render
     :component-did-mount markdown-did-mount}))

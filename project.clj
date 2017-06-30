@@ -9,7 +9,6 @@
                  [ring/ring-json "0.4.0"]
                  [org.clojure/java.jdbc "0.6.1"]
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
-                 [clj-time "0.8.0"]
                  [cheshire "5.7.1"]
                  [reagent "0.6.2"]
                  [cljs-http "0.1.43"]

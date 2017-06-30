@@ -1,7 +1,6 @@
 (ns forest-community-blog.handler
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.util.response :refer [response status]]
@@ -83,7 +82,6 @@
 
 (def app
   (-> app-routes
-     ;; (wrap-defaults site-defaults)
       (wrap-json-body {:keywords? true :bigdecimals? true})
       (wrap-json-response)
       (wrap-cors :access-control-allow-origin [#"http://localhost:3449"]

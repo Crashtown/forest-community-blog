@@ -6,7 +6,7 @@
             [cljs.forest-community-blog.state :refer [app-state get-posts!]]
             [cljs.forest-community-blog.components.new-post-page :refer [new-post]]
             [cljs.forest-community-blog.components.post-page :refer [post]]
-            [cljs.forest-community-blog.components.blog-page :refer [blog]]
+            [cljs.forest-community-blog.components.index-page :refer [index]]
             [cljs.forest-community-blog.components.about-page :refer [about]]
             [cljs.forest-community-blog.components.login-page :refer [login]]
             [cljs.forest-community-blog.components.navigation :refer [navigation]]))
@@ -21,7 +21,7 @@
 (defn current-page []
   (let [page (@app-state :page)]
     (match page
-           :blog [blog]
+           :index [index]
            [:post id] [post id]
            :about [about]
            :login [login]

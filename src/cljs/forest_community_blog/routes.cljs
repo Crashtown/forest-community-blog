@@ -17,7 +17,8 @@
        (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
-(defroute blog-path "/" [] (set-page! :blog))
+(defroute index-path "/index" [] (set-page! :index))
+(defroute blog-path "/" [] (secretary/dispatch! (index-path)))
 (defroute about-path "/about" [] (set-page! :about))
 (defroute post-path "/posts/:id" [id] (set-page! [:post id]))
 (defroute "/login" [] (set-page! :login))
