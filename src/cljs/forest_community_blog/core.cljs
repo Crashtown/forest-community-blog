@@ -4,7 +4,7 @@
             [cljs.core.match]
             [cljs.forest-community-blog.routes :as routes]
             [cljs.forest-community-blog.state :refer [app-state get-posts!]]
-            [cljs.forest-community-blog.components.new-post-page :refer [new-post]]
+            [cljs.forest-community-blog.components.edit-page :refer [edit]]
             [cljs.forest-community-blog.components.post-page :refer [post]]
             [cljs.forest-community-blog.components.index-page :refer [index]]
             [cljs.forest-community-blog.components.about-page :refer [about]]
@@ -25,7 +25,7 @@
            [:post id] [post id]
            :about [about]
            :login [login]
-           :new-post [new-post]
+           [:edit id] [edit id]
            :else [:div])))
 
 (defn ^:export init! []

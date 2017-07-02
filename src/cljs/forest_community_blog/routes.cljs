@@ -20,9 +20,10 @@
 (defroute index-path "/index" [] (set-page! :index))
 (defroute blog-path "/" [] (secretary/dispatch! (index-path)))
 (defroute about-path "/about" [] (set-page! :about))
-(defroute post-path "/posts/:id" [id] (set-page! [:post id]))
+(defroute post-path "/posts/:id" [id] (set-page! [:post (js/parseInt id)]))
 (defroute "/login" [] (set-page! :login))
-(defroute "/new-post" [] (set-page! :new-post))
+(defroute "/edit" [] (set-page! [:edit nil]))
+(defroute "/edit/:id" [id] (set-page! [:edit (js/parseInt id)]))
 
 (defn init! []
   (secretary/set-config! :prefix "#")
