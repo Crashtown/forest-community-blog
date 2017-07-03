@@ -22,3 +22,19 @@
             raw-posts (:body response)
             posts (map raw->Post raw-posts)]
         (swap! app-state assoc :posts posts))))
+
+(defn update-post! [id post]
+  (go (let [response (<! (http/put (str "http://localhost:3000/posts/" id)
+                                   {:with-credentials? false
+                                    :headers {"content-type" "application/json"}
+                                    :json-params post}))]
+        (.log js/console (str (:body response)))))
+  (get-posts!))
+
+(defn create-post! [post]
+  (go (let [response (<! (http/post "http://localhost:3000/posts"
+                                    {:with-credentials? false
+                                     :headers {"content-type" "application/json"}
+                                     :json-params post}))]
+        (.log js/console (str (:body response)))))
+  (get-posts!))

@@ -6,6 +6,7 @@
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.not-modified :refer [wrap-not-modified]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
+            [ring.logger :refer [wrap-with-logger]]
             [ring.util.response :refer [response status]]
             [clojure.java.io :as io]
             [forest-community-blog.entities.post :as post]))
@@ -66,6 +67,7 @@
 
 (def app
   (-> app-routes
+      (wrap-with-logger)
       (wrap-json-body {:keywords? true :bigdecimals? true})
       (wrap-json-response)
       (wrap-cors :access-control-allow-origin [#"http://localhost:3449"]

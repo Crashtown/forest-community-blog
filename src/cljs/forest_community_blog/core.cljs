@@ -14,9 +14,11 @@
 (declare current-page)
 
 (defn root-component []
-  [:div.root
-   [navigation]
-   [current-page]])
+  (get-posts!)
+  (fn []
+    [:div.root
+     [navigation]
+     [current-page]]))
 
 (defn current-page []
   (let [page (@app-state :page)]
@@ -34,7 +36,7 @@
 
 (.addEventListener js/window "DOMContentLoaded" init!)
 
-(.log js/console "Loading forest-community blog...")
+(enable-console-print!)
+(println "Loading forest-community blog...")
 
-(get-posts!)
 (routes/init!)

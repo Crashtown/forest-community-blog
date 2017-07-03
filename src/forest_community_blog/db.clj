@@ -10,6 +10,7 @@
                       [(sql/create-table-ddl :posts
                                              [[:id :serial]
                                               [:title :varchar]
+                                              [:image :varchar]
                                               [:description :text]
                                               [:reading_time :integer]
                                               [:body :text]
