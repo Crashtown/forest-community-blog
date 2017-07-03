@@ -40,6 +40,14 @@
 (defn delete-post [id]
   (post/delete id)
   (response {:success (str "deleted post #" id)}))
+(defn index-uploads []
+  (response {:uploads (->> "public/uploads/"
+                           (io/resource)
+                           (.getPath)
+                           (io/file)
+                           (file-seq)
+                           (drop 1)
+                           (map #(.getName %)))}))
 
 (defn post-routes [id]
   (routes
@@ -68,6 +76,9 @@
          (io/copy tempfile (io/file "resources" "public" "uploads" filename))
          (response {:success (str "uploads/" filename)}))
    (wrap-routes wrap-multipart-params))
+  (->
+   (GET "/uploads" [] (index-uploads))
+   (wrap-routes authenticate))
   (context "/posts" [] posts-routes)
   (route/not-found "Not Found"))
 

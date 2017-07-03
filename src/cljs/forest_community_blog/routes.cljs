@@ -24,6 +24,7 @@
 (defroute "/login" [] (set-page! :login))
 (defroute "/edit" [] (set-page! [:edit nil]))
 (defroute "/edit/:id" [id] (set-page! [:edit (js/parseInt id)]))
+(defroute "/uploads" [] (set-page! :uploads))
 
 (defn init! []
   (secretary/set-config! :prefix "#")
