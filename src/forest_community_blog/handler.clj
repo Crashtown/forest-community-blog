@@ -47,7 +47,7 @@
                            (io/file)
                            (file-seq)
                            (drop 1)
-                           (map #(.getName %)))}))
+                           (map #(str "uploads/" (.getName %))))}))
 
 (defn post-routes [id]
   (routes
@@ -71,11 +71,11 @@
    (route/resources "/")
    (wrap-routes (comp wrap-content-type wrap-not-modified)))
   (->
-   (POST "/upload"
+   (POST "/uploads"
          {{{tempfile :tempfile filename :filename} "file"} :params}
          (io/copy tempfile (io/file "resources" "public" "uploads" filename))
          (response {:success (str "uploads/" filename)}))
-   (wrap-routes wrap-multipart-params))
+   (wrap-routes (comp wrap-multipart-params authenticate)))
   (->
    (GET "/uploads" [] (index-uploads))
    (wrap-routes authenticate))
