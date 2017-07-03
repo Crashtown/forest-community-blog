@@ -2,8 +2,8 @@
   (:require-macros [cljs.core.match :refer [match]])
   (:require [reagent.core :as r]
             [cljs.core.match]
+            [cljs.forest-community-blog.state :refer [app-state]]
             [cljs.forest-community-blog.routes :as routes]
-            [cljs.forest-community-blog.state :refer [app-state get-posts!]]
             [cljs.forest-community-blog.components.edit-page :refer [edit]]
             [cljs.forest-community-blog.components.post-page :refer [post]]
             [cljs.forest-community-blog.components.index-page :refer [index]]
@@ -13,12 +13,11 @@
 
 (declare current-page)
 
+;; COMPONENTs
 (defn root-component []
-  (get-posts!)
-  (fn []
-    [:div.root
-     [navigation]
-     [current-page]]))
+  [:div.root
+   [navigation]
+   [current-page]])
 
 (defn current-page []
   (let [page (@app-state :page)]
@@ -30,13 +29,12 @@
            [:edit id] [edit id]
            :else [:div])))
 
+;; INIT
 (defn ^:export init! []
   (r/render [root-component]
             (js/document.getElementById "app")))
 
 (.addEventListener js/window "DOMContentLoaded" init!)
-
 (enable-console-print!)
 (println "Loading forest-community blog...")
-
 (routes/init!)

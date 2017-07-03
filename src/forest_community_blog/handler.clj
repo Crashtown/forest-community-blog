@@ -44,12 +44,18 @@
 (defn post-routes [id]
   (routes
    (GET "/" [] (get-post id))
-   (PUT "/" {post :body} (update-post id post))
-   (DELETE "/" [] (delete-post id))))
+   (->
+    (PUT "/" {post :body} (update-post id post))
+    (wrap-routes authenticate))
+   (->
+    (DELETE "/" [] (delete-post id))
+    (wrap-routes authenticate))))
 
 (defroutes posts-routes
   (GET "/" [] (get-posts))
-  (POST "/" {post :body} (create-post post))
+  (->
+   (POST "/" {post :body} (create-post post))
+   (wrap-routes authenticate))
   (context "/:id" [id] (post-routes (Integer. id))))
 
 (defroutes app-routes

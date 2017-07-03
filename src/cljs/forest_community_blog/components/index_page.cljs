@@ -1,8 +1,29 @@
 (ns cljs.forest-community-blog.components.index-page
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.forest-community-blog.routes :as routes]
             [cljs.forest-community-blog.state :refer [app-state]]
-            [cljs.forest-community-blog.components.util.time-format :refer [format-time]]))
+            [cljs.forest-community-blog.components.util.time-format :refer [format-time]]
+            [cljs.forest-community-blog.entities :refer [map->Post]]
+            [cljs.core.async :refer [<!]]
+            [cljs-http.client :as http]))
 
+;; EFFECTs
+(defn- raw->Post [raw]
+  (-> raw
+      (map->Post)
+      (update :created-at #(js/Date. %))
+      (update :updated-at #(js/Date. %))))
+
+(defn fetch-posts! []
+  (go (let [response (<! (http/get "http://localhost:3000/posts"
+                                   {:with-credentials? false
+                                    :headers {"content-type" "application/json"}}))
+            raw-posts (:body response)
+            posts (map raw->Post raw-posts)]
+        (swap! app-state assoc :posts posts))))
+
+
+;; COMPONENTs
 (defn blog-entry [post]
   [:div
    [:h2
@@ -24,7 +45,9 @@
      ^{:key (:id post)} [blog-entry post])])
 
 (defn index []
-  (let [posts (@app-state :posts)]
-    [:div.container
-     [:div.row
-      [blog-entries posts]]]))
+  (fetch-posts!)
+  (fn []
+    (let [posts (@app-state :posts)]
+      [:div.container
+       [:div.row
+        [blog-entries posts]]])))
