@@ -17,15 +17,21 @@
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [ring-logger "0.7.7"]]
   :plugins [[lein-ring "0.9.7"]
-            [lein-figwheel "0.5.10"]]
+            [lein-figwheel "0.5.10"]
+            [lein-cljsbuild "1.1.6"]]
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]
                         :figwheel true
                         :compiler {:main "cljs.forest-community-blog.core"
                                    :asset-path "js/out"
                                    :output-to "resources/public/js/main.js"
-                                   :output-dir "resources/public/js/out"}}]}
+                                   :output-dir "resources/public/js/out"}}
+                       {:id "prod"
+                        :source-paths ["src/cljs"]
+                        :compiler {:main "cljs.forest-community-blog.core"
+                                   :optimizations :advanced
+                                   :asset-path "js/out"
+                                   :output-to "resources/public/js/main.js"}}]}
   :ring {:handler forest-community-blog.handler/app}
-  :profiles
-  {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring/ring-mock "0.3.0"]]}})
+  :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
+                                  [ring/ring-mock "0.3.0"]]}})

@@ -7,7 +7,7 @@
             [ring.middleware.not-modified :refer [wrap-not-modified]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.logger :refer [wrap-with-logger]]
-            [ring.util.response :refer [response status]]
+            [ring.util.response :refer [response status content-type file-response resource-response]]
             [clojure.java.io :as io]
             [forest-community-blog.entities.post :as post]))
 
@@ -67,6 +67,7 @@
   (context "/:id" [id] (post-routes (Integer. id))))
 
 (defroutes app-routes
+  (GET "/" [] (resource-response "index.html" {:root "public"}))
   (->
    (route/resources "/")
    (wrap-routes (comp wrap-content-type wrap-not-modified)))
@@ -79,8 +80,7 @@
   (->
    (GET "/uploads" [] (index-uploads))
    (wrap-routes authenticate))
-  (context "/posts" [] posts-routes)
-  (route/not-found "Not Found"))
+  (context "/posts" [] posts-routes))
 
 (def app
   (-> app-routes

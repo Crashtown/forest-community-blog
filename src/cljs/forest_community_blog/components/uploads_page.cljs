@@ -20,7 +20,8 @@
 (defn upload! []
   (go (let [auth (@app-state :auth)
             file (-> (.getElementById js/document "file-upload")
-                     .-files (aget 0))
+                     .-files
+                     (aget 0))
             resp (<! (http/post "http://localhost:3000/uploads"
                                 {:with-credentials? false
                                  :headers {"auth-code" auth}
