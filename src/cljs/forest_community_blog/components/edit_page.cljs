@@ -6,7 +6,8 @@
             [cljs.forest-community-blog.entities :refer [map->Post]]
             [reagent.core :as r]
             [cljs.core.async :refer [<!]]
-            [cljs-http.client :as http]))
+            [cljs-http.client :as http]
+            [cljs.forest-community-blog.cfg :refer [api-uri]]))
 
 ; STATE
 (defonce post-edit-state (r/atom (map->Post {})))
@@ -16,7 +17,7 @@
   (reset! post-edit-state state))
 
 (defn fetch-post! [id]
-  (go (let [resp (<! (http/get (str "http://localhost:3000/posts/" id)
+  (go (let [resp (<! (http/get (str api-uri "/posts/" id)
                                {:with-credentials? false
                                 :headers {"content-type" "application/json"}}))
             post (:body resp)]
@@ -25,7 +26,7 @@
 
 (defn update-post! [id post]
   (go (let [auth (@app-state :auth)
-            response (<! (http/put (str "http://localhost:3000/posts/" id)
+            response (<! (http/put (str api-uri "/posts/" id)
                                    {:with-credentials? false
                                     :headers {"content-type" "application/json"
                                               "auth-code" auth}
@@ -36,7 +37,7 @@
 
 (defn create-post! [post]
   (go (let [auth (@app-state :auth)
-            response (<! (http/post "http://localhost:3000/posts"
+            response (<! (http/post (str api-uri "/posts")
                                     {:with-credentials? false
                                      :headers {"content-type" "application/json"
                                                "auth-code" auth}

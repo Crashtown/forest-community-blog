@@ -30,8 +30,10 @@
                         :source-paths ["src/cljs"]
                         :compiler {:main "cljs.forest-community-blog.core"
                                    :optimizations :advanced
-                                   :asset-path "js/out"
-                                   :output-to "resources/public/js/main.js"}}]}
+                                   :output-to "target/static/public/js/main.js"
+                                   :closure-defines {"cljs.forest-community-blog.cfg/api-uri" "http://146.185.169.229"}}}]}
   :ring {:handler forest-community-blog.handler/app}
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                                  [ring/ring-mock "0.3.0"]]}})
+                                  [ring/ring-mock "0.3.0"]]}}
+  :jar-name "server.jar"
+  :uberjar-name "server-standalone.jar")

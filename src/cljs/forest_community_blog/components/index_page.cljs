@@ -5,7 +5,8 @@
             [cljs.forest-community-blog.components.util.time-format :refer [format-time]]
             [cljs.forest-community-blog.entities :refer [map->Post]]
             [cljs.core.async :refer [<!]]
-            [cljs-http.client :as http]))
+            [cljs-http.client :as http]
+            [cljs.forest-community-blog.cfg :refer [api-uri]]))
 
 ;; EFFECTs
 (defn- raw->Post [raw]
@@ -15,7 +16,7 @@
       (update :updated-at #(js/Date. %))))
 
 (defn fetch-posts! []
-  (go (let [response (<! (http/get "http://localhost:3000/posts"
+  (go (let [response (<! (http/get (str api-uri "/posts")
                                    {:with-credentials? false
                                     :headers {"content-type" "application/json"}}))
             raw-posts (:body response)

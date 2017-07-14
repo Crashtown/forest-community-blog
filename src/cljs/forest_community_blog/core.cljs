@@ -11,7 +11,8 @@
    [cljs.forest-community-blog.components.about-page :refer [about]]
    [cljs.forest-community-blog.components.login-page :refer [login]]
    [cljs.forest-community-blog.components.navigation :refer [navigation]]
-   [cljs.forest-community-blog.components.uploads-page :refer [uploads]]))
+   [cljs.forest-community-blog.components.uploads-page :refer [uploads]]
+   [cljs.forest-community-blog.cfg :refer [api-uri]]))
 
 (declare current-page)
 
@@ -40,4 +41,5 @@
 (.addEventListener js/window "DOMContentLoaded" init!)
 (enable-console-print!)
 (println "Loading forest-community blog...")
+(println api-uri)
 (routes/init!)
