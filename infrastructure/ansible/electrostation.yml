@@ -1,0 +1,52 @@
+---
+- hosts: webservers
+  become: true
+  become_method: sudo
+  # roles:
+  #   - "geerlingguy.java"
+  #   - "geerlingguy.nginx"
+  #   - "ANXS.postgresql"
+  tasks:
+    - name: Create server dir
+      file:
+        path: "/root/forest_community_blog/server"
+        state: directory
+
+    - name: Create client dir
+      file:
+        path: "/root/forest_community_blog/client"
+        state: directory
+
+    - name: Upload server jar
+      copy:
+        src: ../../target/server-standalone.jar
+        dest: /root/forest_community_blog/server/app.jar
+
+    - name: Create systemd config for forest-community-blog service
+      template:
+        src: "templates/forest-community-blog.service.j2"
+        dest: "/etc/systemd/system/forest-community-blog.service"
+
+    - name: Restart server service
+      service:
+        name: forest-community-blog
+        state: restarted
+
+    # - name: Copy client static to server
+    #   copy:
+    #     src: "../../target/static"
+    #     dest: "/root/forest_community_blog/client"
+    #     directory_mode: yes
+    #     mode: "u+rwx"
+
+
+    # - name: Create database for forest community blog
+    #   postgresql_db:
+    #     name: forest_community_blog
+
+    # - name: Create root role for database
+    #   postgresql_user:
+    #     db: forest_community_blog
+    #     name: root
+
+    

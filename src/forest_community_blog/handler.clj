@@ -6,7 +6,6 @@
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.not-modified :refer [wrap-not-modified]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
-            [ring.middleware.file :refer [wrap-file]]
             [ring.logger :refer [wrap-with-logger]]
             [ring.util.response :refer [response status content-type file-response]]
             [clojure.java.io :as io]
@@ -68,10 +67,6 @@
   (context "/:id" [id] (post-routes (Integer. id))))
 
 (defroutes app-routes
-  (GET "/" [] (file-response "target/static/public/index.html"))
-  (->
-   (route/resources "/")
-   (wrap-routes (comp wrap-content-type wrap-not-modified)))
   (->
    (POST "/uploads"
          {{{tempfile :tempfile filename :filename} "file"} :params}
@@ -89,5 +84,4 @@
       (wrap-json-body {:keywords? true :bigdecimals? true})
       (wrap-json-response)
       (wrap-cors :access-control-allow-origin [#"http://localhost:3449"]
-                 :access-control-allow-methods [:get :put :post :delete])
-      (wrap-file "target/static/public")))
+                 :access-control-allow-methods [:get :put :post :delete])))

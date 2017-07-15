@@ -1,0 +1,9 @@
+[Unit]
+Description=Starts awesome blog
+
+[Service]
+ExecStart=/bin/sh -c "exec java -jar /root/forest_community_blog/server/app.jar"
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
