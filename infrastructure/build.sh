@@ -15,3 +15,7 @@ rm target/static/public/js/main.js
 echo [info] Building client
 lein cljsbuild once prod
 
+echo [info] Compress client.tar.gz
+cd target
+tar -zcvf client.tar.gz static
+

@@ -25,27 +25,15 @@
         path: "/root/forest_community_blog/client"
         state: directory
 
-    - name: Upload server jar
-      copy:
-        src: ../../target/server-standalone.jar
-        dest: /root/forest_community_blog/server/app.jar
-
     - name: Create systemd config for forest-community-blog service
       template:
         src: "templates/forest-community-blog.service.j2"
         dest: "/etc/systemd/system/forest-community-blog.service"
 
-    - name: Restart server service
-      service:
-        name: forest-community-blog
-        state: restarted
-
-    - name: Copy client static to server
-      copy:
-        src: "../../target/static"
-        dest: "/root/forest_community_blog/client"
-        directory_mode: yes
-        mode: "u+rwx"
+    - name: Create environment file for forest-community-blog
+      template:
+        src: "templates/forest-community-blog.env.j2"
+        dest: "/etc/profile.d/forest-community-blog"
 
     - name: Create database for forest community blog
       postgresql_db:

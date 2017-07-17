@@ -2,4 +2,4 @@
 
 cd ansible
 
-ansible-playbook -i inventories/prod electrostation.yml
+ansible-playbook -i inventories/prod electrostation_provision.yml
