@@ -12,7 +12,8 @@
    [cljs.forest-community-blog.components.login-page :refer [login]]
    [cljs.forest-community-blog.components.navigation :refer [navigation]]
    [cljs.forest-community-blog.components.uploads-page :refer [uploads]]
-   [cljs.forest-community-blog.cfg :refer [api-uri]]))
+   [cljs.forest-community-blog.cfg :refer [api-uri]]
+   [cljsjs.bootstrap]))
 
 (declare current-page)
 
