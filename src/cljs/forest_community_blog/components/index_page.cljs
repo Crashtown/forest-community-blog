@@ -3,17 +3,12 @@
   (:require [cljs.forest-community-blog.routes :as routes]
             [cljs.forest-community-blog.state :refer [app-state]]
             [cljs.forest-community-blog.components.util.time-format :refer [format-time]]
-            [cljs.forest-community-blog.entities :refer [map->Post]]
+            [cljs.forest-community-blog.entities :refer [raw->Post]]
             [cljs.core.async :refer [<!]]
             [cljs-http.client :as http]
             [cljs.forest-community-blog.cfg :refer [api-uri]]))
 
 ;; EFFECTs
-(defn- raw->Post [raw]
-  (-> raw
-      (map->Post)
-      (update :created-at #(js/Date. %))
-      (update :updated-at #(js/Date. %))))
 
 (defn fetch-posts! []
   (go (let [response (<! (http/get (str api-uri "/posts")
