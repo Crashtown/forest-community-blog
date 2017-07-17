@@ -1,17 +1,25 @@
 (ns forest-community-blog.handler
-  (:require [compojure.core :refer :all]
-            [compojure.route :as route]
-            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [ring.middleware.cors :refer [wrap-cors]]
-            [ring.middleware.content-type :refer [wrap-content-type]]
-            [ring.middleware.not-modified :refer [wrap-not-modified]]
-            [ring.middleware.multipart-params :refer [wrap-multipart-params]]
-            [ring.logger :refer [wrap-with-logger]]
-            [ring.util.response :refer [response status content-type file-response]]
-            [clojure.java.io :as io]
-            [forest-community-blog.entities.post :as post]))
+  (:require
+   [compojure.core :refer :all]
+   [compojure.route :as route]
+   [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
+   [ring.middleware.cors :refer [wrap-cors]]
+   [ring.middleware.content-type :refer [wrap-content-type]]
+   [ring.middleware.not-modified :refer [wrap-not-modified]]
+   [ring.middleware.multipart-params :refer [wrap-multipart-params]]
+   [ring.logger :refer [wrap-with-logger]]
+   [ring.util.response :refer [response status content-type file-response]]
+   [clojure.java.io :as io]
+   [forest-community-blog.entities.post :as post]
+   [clojure.tools.nrepl.server :refer [start-server]]))
 
-(def auth-code (or (System/getenv "FOREST_COMMUNITY_BLOG_SECRET")
+;; STARTS nREPL server
+(defonce repl-server (start-server :port
+                                   (or (System/getenv "FOREST_COMMUNITY_BLOG_REPL_PORT")
+                                       3388)))
+
+;; AUTH CODE
+(defonce auth-code (or (System/getenv "FOREST_COMMUNITY_BLOG_AUTH_CODE")
                    "secret"))
 
 (defn authenticate [handler]
@@ -66,22 +74,28 @@
    (wrap-routes authenticate))
   (context "/:id" [id] (post-routes (Integer. id))))
 
-(defroutes app-routes
+(defroutes uploads-routes
   (->
-   (POST "/uploads"
+   (POST "/"
          {{{tempfile :tempfile filename :filename} "file"} :params}
          (io/copy tempfile (io/file "resources" "public" "uploads" filename))
          (response {:success (str "uploads/" filename)}))
    (wrap-routes (comp wrap-multipart-params authenticate)))
   (->
-   (GET "/uploads" [] (index-uploads))
-   (wrap-routes authenticate))
-  (context "/posts" [] posts-routes))
+   (GET "/" [] (index-uploads))
+   (wrap-routes authenticate)))
+
+(defroutes app-routes
+  (context "/api" []
+           (context "/uploads" []
+                    uploads-routes)
+           (context "/posts" []
+                    posts-routes)))
 
 (def app
   (-> app-routes
       (wrap-with-logger)
       (wrap-json-body {:keywords? true :bigdecimals? true})
       (wrap-json-response)
-      (wrap-cors :access-control-allow-origin [#"http://localhost:3449"]
+      (wrap-cors :access-control-allow-origin [#"http://127.0.0.1"]
                  :access-control-allow-methods [:get :put :post :delete])))
