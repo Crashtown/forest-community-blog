@@ -25,6 +25,11 @@
         path: "/root/forest_community_blog/client"
         state: directory
 
+    - name: Create uploads dir
+      file:
+        path: "/root/forest_community_blog/uploads"
+        state: directory
+
     - name: Create systemd config for forest-community-blog service
       template:
         src: "templates/forest-community-blog.service.j2"

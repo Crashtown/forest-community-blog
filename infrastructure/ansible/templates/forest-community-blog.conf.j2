@@ -5,6 +5,9 @@ server {
   location / {
     root /root/forest_community_blog/client/static/public;
   }
+  location /uploads {
+    root /root/forest_community_blog/uploads;
+  }
   location /api {
     proxy_pass http://localhost:3000;
   }

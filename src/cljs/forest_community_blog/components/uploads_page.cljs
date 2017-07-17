@@ -3,15 +3,18 @@
   (:require [cljs.forest-community-blog.state :refer [app-state]]
             [reagent.core :as r]
             [cljs.core.async :refer [<!]]
-            [cljs-http.client :as http]))
+            [cljs-http.client :as http]
+            [cljs.forest-community-blog.cfg :refer [api-uri]]))
 
 ;; STATE
 (defonce uploads-state (r/atom []))
 
+(def endpoint (str api-uri "/uploads"))
+
 ;; EFFECTs
 (defn fetch-uploads! []
   (go (let [auth (@app-state :auth)
-            resp (<! (http/get "http://localhost:3000/uploads"
+            resp (<! (http/get endpoint
                                {:with-credentials? false
                                 :headers {"content-type" "applicaiton/json"
                                           "auth-code" auth}}))]
@@ -22,7 +25,7 @@
             file (-> (.getElementById js/document "file-upload")
                      .-files
                      (aget 0))
-            resp (<! (http/post "http://localhost:3000/uploads"
+            resp (<! (http/post endpoint
                                 {:with-credentials? false
                                  :headers {"auth-code" auth}
                                  :multipart-params [["file" file]]}))]

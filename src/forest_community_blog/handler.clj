@@ -20,7 +20,10 @@
 
 ;; AUTH CODE
 (defonce auth-code (or (System/getenv "FOREST_COMMUNITY_BLOG_AUTH_CODE")
-                   "secret"))
+                       "secret"))
+
+(defonce uploads-dir (or (System/getenv "FOREST_COMMUNITY_BLOG_UPLOADS_DIR")
+                         "resources/public/uploads"))
 
 (defn authenticate [handler]
   (fn [request]
@@ -49,11 +52,9 @@
   (post/delete id)
   (response {:success (str "deleted post #" id)}))
 (defn index-uploads []
-  (response {:uploads (->> "public/uploads/"
-                           (io/resource)
-                           (.getPath)
-                           (io/file)
-                           (file-seq)
+  (response {:uploads (->> uploads-dir
+                           io/file
+                           file-seq
                            (drop 1)
                            (map #(str "uploads/" (.getName %))))}))
 
@@ -78,7 +79,7 @@
   (->
    (POST "/"
          {{{tempfile :tempfile filename :filename} "file"} :params}
-         (io/copy tempfile (io/file "resources" "public" "uploads" filename))
+         (io/copy tempfile (io/file uploads-dir filename))
          (response {:success (str "uploads/" filename)}))
    (wrap-routes (comp wrap-multipart-params authenticate)))
   (->
