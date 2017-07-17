@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+server {
+  listen 80;
+  location / {
+    root /root/forest_community_blog/client/static/public;
+  }
+  location /api {
+    proxy_pass http://localhost:3000;
+  }
+}
