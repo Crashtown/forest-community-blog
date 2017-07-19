@@ -6,14 +6,14 @@
     - name: Upload server jar
       copy:
         src: ../../target/server-standalone.jar
-        dest: /root/forest_community_blog/server/app.jar
+        dest: /var/www/forest-community-blog/server/app.jar
         
     - name: Upload client static
       unarchive:
-        src: "../../target/client.tar.gz"
-        dest: "/root/forest_community_blog/client"
+        src: ../../target/client.tar.gz
+        dest: /var/www/forest-community-blog/client
         directory_mode: yes
-        mode: "u+rwx"
+        mode: u+rwx
 
     - name: Restart server service
       service:

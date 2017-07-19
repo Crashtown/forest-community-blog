@@ -4,7 +4,7 @@
   become_method: sudo
 
   vars:
-    nginx_user: "root"
+    nginx_user: "www-data"
     nginx_sites:
       forest-community-blog:
         template: forest-community-blog.conf.j2
@@ -17,17 +17,17 @@
   tasks:
     - name: Create server dir
       file:
-        path: "/root/forest_community_blog/server"
+        path: "/var/www/forest-community-blog/server"
         state: directory
 
     - name: Create client dir
       file:
-        path: "/root/forest_community_blog/client"
+        path: "/var/www/forest-community-blog/client"
         state: directory
 
     - name: Create uploads dir
       file:
-        path: "/root/forest_community_blog/uploads"
+        path: "/var/www/forest-community-blog/uploads"
         state: directory
 
     - name: Create systemd config for forest-community-blog service

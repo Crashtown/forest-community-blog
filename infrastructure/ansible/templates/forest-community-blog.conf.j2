@@ -3,12 +3,12 @@
 server {
   listen 80;
   location / {
-    root /root/forest_community_blog/client/static/public;
+    root /var/www/forest-community-blog/client/static/public;
   }
   location /api {
     proxy_pass http://localhost:3000;
   }
   location /uploads {
-    alias /root/forest_community_blog/uploads;
+    alias /var/www/forest-community-blog/uploads;
   }
 }
