@@ -99,5 +99,6 @@
       (wrap-json-body {:keywords? true :bigdecimals? true})
       (wrap-json-response)
       (wrap-cors :access-control-allow-origin [#"http://127.0.0.1"
-                                               #"http://localhost:3449"]
+                                               #"http://localhost:3449"
+                                               #"http://forest-community.org"]
                  :access-control-allow-methods [:get :put :post :delete])))
