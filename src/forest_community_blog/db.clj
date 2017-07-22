@@ -1,26 +1,32 @@
 (ns forest-community-blog.db
-  (:require [clojure.java.jdbc :as sql]))
+  (:require [clojure.java.jdbc :as sql]
+            [clojure.java.io :as io]
+            [ragtime.jdbc :as jdbc]
+            [ragtime.repl :as repl]))
 
 (def db (or (System/getenv "DATABASE_URL")
             "postgresql://localhost:5432/forest_community_blog"))
 
-(defn migrate-db []
-  "eval migrations"
-  (sql/db-do-commands db
-                      [(sql/create-table-ddl :posts
-                                             [[:id :serial]
-                                              [:title :varchar]
-                                              [:image :varchar]
-                                              [:description :text]
-                                              [:reading_time :integer]
-                                              [:body :text]
-                                              [:created_at :timestamp]
-                                              [:updated_at :timestamp]])]))
+(defn load-config []
+  {:datastore  (jdbc/sql-database db)
+   :migrations (jdbc/load-resources "migrations")})
 
-(defn drop-db []
-  "drop database"
-  (sql/db-do-commands db [(sql/drop-table-ddl :posts)]))
+(defn migrate []
+  (repl/migrate (load-config)))
 
-(defn reset-db []
-  (do (drop-db)
-      (migrate-db)))
+(defn rollback []
+  (repl/rollback (load-config)))
+
+(defn generate [name]
+  (let [ts (.getTime (java.util.Date.))
+        migrations-path (.getPath (io/resource "migrations"))
+        base-name (str ts "-" name)
+        up-name (str base-name ".up.sql")
+        down-name (str base-name ".down.sql")
+        full-up-name (str migrations-path "/" up-name)
+        full-down-name (str migrations-path "/" down-name)]
+    (spit full-up-name
+          (str "-- " up-name "\n"))
+    (spit full-down-name
+          (str "-- " down-name "\n"))))
+
