@@ -34,8 +34,8 @@
                         :compiler {:main "cljs.forest-community-blog.core"
                                    :optimizations :advanced
                                    :output-to "target/static/public/js/main.js"
-                                   :closure-defines {cljs.forest-community-blog.cfg/api-uri "http://forest-community.org/api"}}
-                        :externs ["externs.js"]}]}
+                                   :closure-defines {cljs.forest-community-blog.cfg/api-uri "http://forest-community.org/api"}
+                                   :externs ["externs.js"]}}]}
   :ring {:handler forest-community-blog.handler/app}
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring/ring-mock "0.3.0"]]}}
@@ -43,4 +43,4 @@
   :uberjar-name "server-standalone.jar"
   :aliases {"migrate"  ["run" "-m" "forest-community-blog.db" "migrate"]
             "rollback" ["run" "-m" "forest-community-blog.db" "rollback"]
-            "gen_migration" ["run" "-m" "forest-community-blog.db/generate"]})
+            "generate-migration" ["run" "-m" "forest-community-blog.db/generate-migration"]})
