@@ -15,6 +15,11 @@
         directory_mode: yes
         mode: u+rwx
 
+    - name: Migrate the database
+      shell: java -cp app.jar clojure.main -m forest-community-blog.db migrate
+      args:
+        chdir: /var/www/forest-community-blog/server
+
     - name: Restart server service
       service:
         name: forest-community-blog
