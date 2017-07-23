@@ -17,7 +17,7 @@
 (defn rollback []
   (repl/rollback (load-config)))
 
-(defn generate [name]
+(defn generate-migration [name]
   (let [ts (.getTime (java.util.Date.))
         migrations-path (.getPath (io/resource "migrations"))
         base-name (str ts "-" name)
@@ -30,3 +30,13 @@
     (spit full-down-name
           (str "-- " down-name "\n"))))
 
+(defn -main [command]
+  (cond
+    (= command "migrate")
+    (do (println "Migrating the database!")
+        (migrate))
+    (= command "rollback")
+    (do (println "Rollback the database!")
+        (rollback))
+    :otherwise
+    (println (str "Command \"" command "\" is not recognised"))))

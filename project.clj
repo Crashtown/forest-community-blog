@@ -41,6 +41,6 @@
                                   [ring/ring-mock "0.3.0"]]}}
   :jar-name "server.jar"
   :uberjar-name "server-standalone.jar"
-  :aliases {"migrate"  ["run" "-m" "forest-community-blog.db/migrate"]
-            "rollback" ["run" "-m" "forest-community-blog.db/rollback"]
+  :aliases {"migrate"  ["run" "-m" "forest-community-blog.db" "migrate"]
+            "rollback" ["run" "-m" "forest-community-blog.db" "rollback"]
             "gen_migration" ["run" "-m" "forest-community-blog.db/generate"]})
