@@ -1,8 +1,9 @@
 (ns forest-community-blog.routes.posts
-  (:require [forest-community-blog.entities.post :as post]
-            [ring.util.response :refer [response status]]
-            [compojure.core :refer :all]
-            [forest-community-blog.middleware.auth :refer [wrap-auth]]))
+  (:require
+   [forest-community-blog.entities.post :as post]
+   [ring.util.response :refer [response status]]
+   [compojure.core :refer :all]
+   [forest-community-blog.middleware.auth :refer [wrap-auth]]))
 
 (defn get-posts []
   (response (post/all)))
@@ -20,7 +21,6 @@
 (defn delete-post [id]
   (post/delete id)
   (response {:success (str "deleted post #" id)}))
-
 
 (defn post-routes [id]
   (routes
