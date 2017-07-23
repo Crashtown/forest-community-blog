@@ -22,3 +22,6 @@ resources/public/uploads/
 auto-save-list
 tramp
 .\#*
+
+### Ansible ###
+*.retry
