@@ -1,4 +1,3 @@
-
 (ns forest-community-blog.handler
   (:require
    [compojure.core :refer :all]
@@ -9,49 +8,20 @@
    [ring.middleware.not-modified :refer [wrap-not-modified]]
    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
    [ring.logger :refer [wrap-with-logger]]
-   [ring.util.response :refer [response status content-type file-response]]
+   [ring.util.response :refer [response status content-type]]
    [clojure.java.io :as io]
-   [forest-community-blog.entities.post :as post]
-   [clojure.tools.nrepl.server :refer [start-server]]))
+   [clojure.tools.nrepl.server :refer [start-server]]
+   [forest-community-blog.routes.posts :refer [posts-routes]]
+   [forest-community-blog.middleware.auth :refer [wrap-auth]]))
 
 ;; STARTS nREPL server
 (defonce repl-server (start-server :port
                                    (or (System/getenv "FOREST_COMMUNITY_BLOG_REPL_PORT")
                                        3388)))
 
-;; AUTH CODE
-(defonce auth-code (or (System/getenv "FOREST_COMMUNITY_BLOG_AUTH_CODE")
-                       "secret"))
-
 (defonce uploads-dir (or (System/getenv "FOREST_COMMUNITY_BLOG_UPLOADS_DIR")
                          "resources/public/uploads"))
 
-(defn authenticate [handler]
-  (fn [request]
-    (let [auth (get-in request [:headers "auth-code"])]
-      (if (= auth auth-code)
-        (do (println "Authenticated")
-            (handler request))
-        (-> {:fail "unauthenticated"}
-            (response)
-            (status 401))))))
-
-(defn get-posts []
-  (response (post/all)))
-(defn get-post [id]
-  (if-let [post (post/get id)]
-    (response post)
-    (-> {:fail (str "post #" id " is not found")}
-        (response)
-        (status 404))))
-(defn create-post [post]
-  (response (post/create post)))
-(defn update-post [id post]
-  (post/update id post)
-  (response (post/get id)))
-(defn delete-post [id]
-  (post/delete id)
-  (response {:success (str "deleted post #" id)}))
 (defn index-uploads []
   (response {:uploads (->> uploads-dir
                            io/file
@@ -59,22 +29,13 @@
                            (drop 1)
                            (map #(str "uploads/" (.getName %))))}))
 
-(defn post-routes [id]
-  (routes
-   (GET "/" [] (get-post id))
-   (->
-    (PUT "/" {post :body} (update-post id post))
-    (wrap-routes authenticate))
-   (->
-    (DELETE "/" [] (delete-post id))
-    (wrap-routes authenticate))))
 
-(defroutes posts-routes
-  (GET "/" [] (get-posts))
-  (->
-   (POST "/" {post :body} (create-post post))
-   (wrap-routes authenticate))
-  (context "/:id" [id] (post-routes (Integer. id))))
+;; (defroutes tracks-routes
+;;   (GET "/" [] (get-tracks))
+;;   (->
+;;    (POST "/" {track :body} (create-track track))
+;;    (wrap-routes wrap-auth))
+;;   (context "/:id" [id] (track-routes (Integer. id))))
 
 (defroutes uploads-routes
   (->
@@ -82,10 +43,10 @@
          {{{tempfile :tempfile filename :filename} "file"} :params}
          (io/copy tempfile (io/file uploads-dir filename))
          (response {:success (str "uploads/" filename)}))
-   (wrap-routes (comp wrap-multipart-params authenticate)))
+   (wrap-routes (comp wrap-multipart-params wrap-auth)))
   (->
    (GET "/" [] (index-uploads))
-   (wrap-routes authenticate)))
+   (wrap-routes wrap-auth)))
 
 (defroutes app-routes
   (context "/api" []
