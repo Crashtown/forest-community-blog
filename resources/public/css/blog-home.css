@@ -15,3 +15,8 @@ footer {
 .row-centered {
     text-align:center;
 }
+
+.vertical-align {
+    display: flex;
+    align-items: center;
+}
