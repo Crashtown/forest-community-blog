@@ -20,9 +20,9 @@
 (defn track-entry [track]
   [:div.row
    [:p.vertical-align
-    (:title track)
     [:audio {:controls true
-             :src (:uri track)}]]])
+             :src (:uri track)}]
+    (:title track)]])
 
 (defn tracklist [tracks]
   [:div.col-md-8.col-md-offset-2
