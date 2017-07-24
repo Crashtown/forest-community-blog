@@ -3,5 +3,6 @@
 
 ;; GLOBAL STATE
 (defonce app-state (r/atom {:page :index
-                            :posts []
+                            :posts ()
+                            :tracks ()
                             :auth nil}))
