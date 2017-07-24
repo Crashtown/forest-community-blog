@@ -5,6 +5,8 @@
 
   vars:
     nginx_user: "www-data"
+    my_extra_params:
+      - client_max_body_size 100M
     nginx_sites:
       forest-community-blog:
         template: forest-community-blog.conf.j2
@@ -12,7 +14,8 @@
   roles:
     - "geerlingguy.java"
     - "ANXS.postgresql"
-    - "jdauphant.nginx"
+    - role: "jdauphant.nginx"
+      nginx_http_params: "{{ nginx_http_default_params + my_extra_params }}"
 
   tasks:
     - name: Create server dir

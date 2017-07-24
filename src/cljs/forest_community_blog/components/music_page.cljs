@@ -34,5 +34,4 @@
   (fn []
     (let [tracks (@app-state :tracks)]
       [:div.container
-       [:div.row
-        [tracklist tracks]]])))
+        [tracklist tracks]])))
