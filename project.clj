@@ -18,7 +18,9 @@
                  [secretary "1.2.3"]
                  [ring-logger "0.7.7"]
                  [ragtime "0.6.0"]
-                 [cljsjs/bootstrap "3.3.6-1"]]
+                 [cljsjs/bootstrap "3.3.6-1"]
+                 [cljsjs/marked "0.3.5-0"]
+                 [cljsjs/highlight "9.12.0-0"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-figwheel "0.5.10"]
             [lein-cljsbuild "1.1.6"]]
@@ -34,8 +36,7 @@
                         :compiler {:main "cljs.forest-community-blog.core"
                                    :optimizations :advanced
                                    :output-to "target/static/public/js/main.js"
-                                   :closure-defines {cljs.forest-community-blog.cfg/api-uri "http://forest-community.org/api"}
-                                   :externs ["externs.js"]}}]}
+                                   :closure-defines {cljs.forest-community-blog.cfg/api-uri "http://forest-community.org/api"}}}]}
   :ring {:handler forest-community-blog.handler/app}
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring/ring-mock "0.3.0"]]}}

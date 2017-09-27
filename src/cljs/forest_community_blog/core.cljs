@@ -1,20 +1,22 @@
 (ns cljs.forest-community-blog.core
   (:require-macros [cljs.core.match :refer [match]])
-  (:require
-   [reagent.core :as r]
-   [cljs.core.match]
-   [cljs.forest-community-blog.state :refer [app-state]]
-   [cljs.forest-community-blog.routes :as routes]
-   [cljs.forest-community-blog.components.edit-page :refer [edit]]
-   [cljs.forest-community-blog.components.post-page :refer [post]]
-   [cljs.forest-community-blog.components.music-page :refer [music]]
-   [cljs.forest-community-blog.components.blog-page :refer [blog]]
-   [cljs.forest-community-blog.components.about-page :refer [about]]
-   [cljs.forest-community-blog.components.login-page :refer [login]]
-   [cljs.forest-community-blog.components.navigation :refer [navigation]]
-   [cljs.forest-community-blog.components.uploads-page :refer [uploads]]
-   [cljs.forest-community-blog.cfg :refer [api-uri]]
-   [cljsjs.bootstrap]))
+  (:require [reagent.core :as r]
+            [cljs.core.match]
+            [cljs.forest-community-blog.state :refer [app-state]]
+            [cljs.forest-community-blog.routes :as routes]
+            [cljs.forest-community-blog.components.edit-page :refer [edit]]
+            [cljs.forest-community-blog.components.post-page :refer [post]]
+            [cljs.forest-community-blog.components.music-page :refer [music]]
+            [cljs.forest-community-blog.components.blog-page :refer [blog]]
+            [cljs.forest-community-blog.components.about-page :refer [about]]
+            [cljs.forest-community-blog.components.login-page :refer [login]]
+            [cljs.forest-community-blog.components.navigation :refer [navigation]]
+            [cljs.forest-community-blog.components.uploads-page :refer [uploads]]
+            [cljs.forest-community-blog.cfg :refer [api-uri]]
+            [cljsjs.bootstrap]
+            [cljsjs.highlight]
+            [cljsjs.highlight.langs.clojure]
+            [cljsjs.marked]))
 
 (declare current-page)
 

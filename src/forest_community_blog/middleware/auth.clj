@@ -11,5 +11,5 @@
       (if (= auth auth-code)
         (handler request)
         (-> {:fail "unauthenticated"}
-            (response)
+            response
             (status 401))))))
