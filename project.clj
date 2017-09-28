@@ -13,6 +13,7 @@
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
                  [cheshire "5.7.1"]
                  [re-frame "0.10.1"]
+                 [day8.re-frame/http-fx "0.1.4"]
                  [cljs-http "0.1.43"]
                  [ring-cors "0.1.11"]
                  [secretary "1.2.3"]

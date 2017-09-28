@@ -6,17 +6,6 @@
             [forest-community-blog.entities :refer [raw->Track]]
             [cljs-http.client :as http]))
 
-
-;; EFFECTs
-(defn fetch-tracks! []
-  (go (let [response (<! (http/get (str config/api-uri "/tracks")
-                                   {:with-credentials? false
-                                    :headers {"content-type" "application/json"}}))
-            raw-tracks (:body response)
-            tracks (map raw->Track raw-tracks)]
-        (rf/dispatch [:set-tracks tracks]))))
-
-;; COMPONENTs
 (defn track-entry [track]
   [:div.row
    [:p.vertical-align
@@ -30,7 +19,7 @@
      ^{:key (:id track)} [track-entry track])])
 
 (defn music []
-  (fetch-tracks!)
+  (rf/dispatch [:fetch-tracks])
   (let [tracks (rf/subscribe [:tracks])]
     (fn []
       [:div.container

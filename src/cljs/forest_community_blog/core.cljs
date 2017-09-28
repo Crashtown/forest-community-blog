@@ -1,6 +1,7 @@
 (ns forest-community-blog.core
   (:require [re-frame.core :as rf]
             [reagent.core :as r]
+            [day8.re-frame.http-fx]
             [re-frisk.core :refer [enable-re-frisk!]]
             [forest-community-blog.routes :as routes]
             [forest-community-blog.db]
@@ -28,6 +29,6 @@
 
 (defn ^:export init []
   (routes/app-routes)
-  (rf/dispatch-sync [:initialize-db])
   (dev-setup)
+  (rf/dispatch-sync [:initialize-db])
   (mount-root))

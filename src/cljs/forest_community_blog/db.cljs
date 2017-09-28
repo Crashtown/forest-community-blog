@@ -3,5 +3,6 @@
 (def default-db
   {:current-page :home
    :tracks []
-   :posts []})
+   :posts []
+   :auth nil})
 

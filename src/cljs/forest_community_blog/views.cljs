@@ -12,16 +12,17 @@
             [forest-community-blog.components.uploads-page :refer [uploads]]))
 
 (defn current-page []
-  (let [page @(rf/subscribe [:current-page])]
-    (match page
-           :blog [blog]
-           :music [music]
-           [:post id] [post id]
-           :about [about]
-           :login [login]
-           [:edit id] [edit id]
-           :uploads [uploads]
-           :else [:div])))
+  (let [page (rf/subscribe [:current-page])]
+    (fn []
+      (match @page
+             :blog [blog]
+             :music [music]
+             [:post id] [post id]
+             :about [about]
+             :login [login]
+             [:edit id] [edit id]
+             :uploads [uploads]
+             :else [:div]))))
 
 (defn main-panel []
   [:div.root

@@ -16,4 +16,9 @@
  (fn [{tracks :tracks} _]
    tracks))
 
+(rf/reg-sub
+ :auth
+ (fn [{auth :auth} _]
+   auth))
+
 

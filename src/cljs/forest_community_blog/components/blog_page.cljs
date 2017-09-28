@@ -5,21 +5,8 @@
             [forest-community-blog.components.util.time-format :refer [format-time]]
             [forest-community-blog.entities :refer [raw->Post]]
             [cljs.core.async :refer [<!]]
-            [cljs-http.client :as http]
-            [forest-community-blog.config :as config]))
+            [cljs-http.client :as http]))
 
-;; EFFECTs
-
-(defn fetch-posts! []
-  (go (let [response (<! (http/get (str config/api-uri "/posts")
-                                   {:with-credentials? false
-                                    :headers {"content-type" "application/json"}}))
-            raw-posts (:body response)
-            posts (map raw->Post raw-posts)]
-        (rf/dispatch [:set-posts posts]))))
-
-
-;; COMPONENTs
 (defn blog-entry [post]
   [:div
    [:h2
@@ -41,7 +28,7 @@
      ^{:key (:id post)} [blog-entry post])])
 
 (defn blog []
-  (fetch-posts!)
+  (rf/dispatch [:fetch-posts])
   (let [posts (rf/subscribe [:posts])]
     (fn []
       [:div.container
