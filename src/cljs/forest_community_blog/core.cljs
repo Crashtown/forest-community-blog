@@ -1,6 +1,7 @@
 (ns forest-community-blog.core
   (:require [re-frame.core :as rf]
             [reagent.core :as r]
+            [re-frisk.core :refer [enable-re-frisk!]]
             [forest-community-blog.routes :as routes]
             [forest-community-blog.db]
             [forest-community-blog.events]
