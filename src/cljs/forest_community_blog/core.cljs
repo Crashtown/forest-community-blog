@@ -1,50 +1,32 @@
-(ns cljs.forest-community-blog.core
-  (:require-macros [cljs.core.match :refer [match]])
-  (:require [reagent.core :as r]
-            [cljs.core.match]
-            [cljs.forest-community-blog.state :refer [app-state]]
-            [cljs.forest-community-blog.routes :as routes]
-            [cljs.forest-community-blog.components.edit-page :refer [edit]]
-            [cljs.forest-community-blog.components.post-page :refer [post]]
-            [cljs.forest-community-blog.components.music-page :refer [music]]
-            [cljs.forest-community-blog.components.blog-page :refer [blog]]
-            [cljs.forest-community-blog.components.about-page :refer [about]]
-            [cljs.forest-community-blog.components.login-page :refer [login]]
-            [cljs.forest-community-blog.components.navigation :refer [navigation]]
-            [cljs.forest-community-blog.components.uploads-page :refer [uploads]]
-            [cljs.forest-community-blog.cfg :refer [api-uri]]
+(ns forest-community-blog.core
+  (:require [re-frame.core :as rf]
+            [reagent.core :as r]
+            [forest-community-blog.routes :as routes]
+            [forest-community-blog.db]
+            [forest-community-blog.events]
+            [forest-community-blog.subs]
+            [forest-community-blog.views :as views]
+            [forest-community-blog.config :as config]
+            [cljsjs.react]
+            [cljsjs.react.dom]
             [cljsjs.bootstrap]
             [cljsjs.highlight]
             [cljsjs.highlight.langs.clojure]
             [cljsjs.marked]))
 
-(declare current-page)
+(defn dev-setup []
+  (when config/debug?
+    (enable-console-print!)
+    (enable-re-frisk!)
+    (println "dev mode")))
 
-;; COMPONENTs
-(defn root-component []
-  [:div.root
-   [navigation]
-   [current-page]])
+(defn mount-root []
+  (rf/clear-subscription-cache!)
+  (r/render [views/main-panel]
+                  (.getElementById js/document "app")))
 
-(defn current-page []
-  (let [page (@app-state :page)]
-    (match page
-           :blog [blog]
-           :music [music]
-           [:post id] [post id]
-           :about [about]
-           :login [login]
-           [:edit id] [edit id]
-           :uploads [uploads]
-           :else [:div])))
-
-;; INIT
-(defn ^:export init! []
-  (r/render [root-component]
-            (js/document.getElementById "app")))
-
-(.addEventListener js/window "DOMContentLoaded" init!)
-(enable-console-print!)
-(println "Loading forest-community blog...")
-(println api-uri)
-(routes/init!)
+(defn ^:export init []
+  (routes/app-routes)
+  (rf/dispatch-sync [:initialize-db])
+  (dev-setup)
+  (mount-root))

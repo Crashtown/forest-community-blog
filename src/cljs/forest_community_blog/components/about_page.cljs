@@ -1,4 +1,4 @@
-(ns cljs.forest-community-blog.components.about-page)
+(ns forest-community-blog.components.about-page)
 
 (defn about []
   [:div.container

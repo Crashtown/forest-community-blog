@@ -1,13 +1,12 @@
-(ns cljs.forest-community-blog.components.post-page
+(ns forest-community-blog.components.post-page
   (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs.forest-community-blog.state :refer [app-state]]
-            [cljs.forest-community-blog.components.util.time-format :refer [format-time]]
-            [cljs.forest-community-blog.components.markdown :refer [markdown-component]]
-            [cljs.forest-community-blog.entities :refer [raw->Post]]
+  (:require [forest-community-blog.components.util.time-format :refer [format-time]]
+            [forest-community-blog.components.markdown :refer [markdown-component]]
+            [forest-community-blog.entities :refer [raw->Post]]
             [reagent.core :as r]
             [cljs.core.async :refer [<!]]
             [cljs-http.client :as http]
-            [cljs.forest-community-blog.cfg :refer [api-uri]]))
+            [forest-community-blog.config :as config]))
 
 ; STATE
 (defonce post-state (r/atom (raw->Post {})))
@@ -17,7 +16,7 @@
   (reset! post-state state))
 
 (defn fetch-post! [id]
-  (go (let [resp (<! (http/get (str api-uri "/posts/" id)
+  (go (let [resp (<! (http/get (str config/api-uri "/posts/" id)
                                {:with-credentials? false
                                 :headers {"content-type" "application/json"}}))
             post (:body resp)]

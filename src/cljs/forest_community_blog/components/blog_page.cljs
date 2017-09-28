@@ -1,22 +1,22 @@
-(ns cljs.forest-community-blog.components.blog-page
+(ns forest-community-blog.components.blog-page
   (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs.forest-community-blog.routes :as routes]
-            [cljs.forest-community-blog.state :refer [app-state]]
-            [cljs.forest-community-blog.components.util.time-format :refer [format-time]]
-            [cljs.forest-community-blog.entities :refer [raw->Post]]
+  (:require [re-frame.core :as rf]
+            [forest-community-blog.routes :as routes]
+            [forest-community-blog.components.util.time-format :refer [format-time]]
+            [forest-community-blog.entities :refer [raw->Post]]
             [cljs.core.async :refer [<!]]
             [cljs-http.client :as http]
-            [cljs.forest-community-blog.cfg :refer [api-uri]]))
+            [forest-community-blog.config :as config]))
 
 ;; EFFECTs
 
 (defn fetch-posts! []
-  (go (let [response (<! (http/get (str api-uri "/posts")
+  (go (let [response (<! (http/get (str config/api-uri "/posts")
                                    {:with-credentials? false
                                     :headers {"content-type" "application/json"}}))
             raw-posts (:body response)
             posts (map raw->Post raw-posts)]
-        (swap! app-state assoc :posts posts))))
+        (rf/dispatch [:set-posts posts]))))
 
 
 ;; COMPONENTs
@@ -42,8 +42,8 @@
 
 (defn blog []
   (fetch-posts!)
-  (fn []
-    (let [posts (@app-state :posts)]
+  (let [posts (rf/subscribe [:posts])]
+    (fn []
       [:div.container
        [:div.row
-        [blog-entries posts]]])))
+        [blog-entries @posts]]])))

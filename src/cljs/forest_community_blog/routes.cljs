@@ -1,15 +1,15 @@
-(ns cljs.forest-community-blog.routes
+(ns forest-community-blog.routes
   (:require-macros [secretary.core :refer [defroute]])
   (:import goog.History)
-  (:require [goog.events :as events]
+  (:require [re-frame.core :as rf]
+            [goog.events :as events]
             [goog.history.EventType :as EventType]
-            [secretary.core :as secretary]
-            [cljs.forest-community-blog.state :refer [app-state]]))
+            [secretary.core :as secretary]))
 
 (declare login-path)
 
 (defn set-page! [page]
-  (swap! app-state assoc :page page))
+  (rf/dispatch [:set-page page]))
 
 (defn hook-browser-navigation! []
   (doto (History.)
@@ -20,7 +20,7 @@
     (.setEnabled true)))
 
 (defn check-auth-present! []
-  (if-not (:auth @app-state)
+  (if-not (rf/subscribe [:auth])
     (set! (.-location js/window) (login-path))))
 
 (defroute blog-path "/blog" [] (set-page! :blog))
@@ -39,6 +39,6 @@
 (defroute "/uploads" [] (do (check-auth-present!)
                             (set-page! :uploads)))
 
-(defn init! []
+(defn app-routes []
   (secretary/set-config! :prefix "#")
   (hook-browser-navigation!))

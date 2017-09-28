@@ -1,13 +1,13 @@
-(ns cljs.forest-community-blog.components.edit-page
+(ns forest-community-blog.components.edit-page
   (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs.forest-community-blog.components.markdown :refer [markdown-component]]
-            [cljs.forest-community-blog.state :refer [app-state]]
-            [cljs.forest-community-blog.routes :refer [set-page!]]
-            [cljs.forest-community-blog.entities :refer [map->Post]]
+  (:require [re-frame.core :as rf]
+            [forest-community-blog.components.markdown :refer [markdown-component]]
+            [forest-community-blog.routes :refer [set-page!]]
+            [forest-community-blog.entities :refer [map->Post]]
             [reagent.core :as r]
             [cljs.core.async :refer [<!]]
             [cljs-http.client :as http]
-            [cljs.forest-community-blog.cfg :refer [api-uri]]))
+            [forest-community-blog.config :as config]))
 
 ; STATE
 (defonce post-edit-state (r/atom (map->Post {})))
@@ -17,7 +17,7 @@
   (reset! post-edit-state state))
 
 (defn fetch-post! [id]
-  (go (let [resp (<! (http/get (str api-uri "/posts/" id)
+  (go (let [resp (<! (http/get (str config/api-uri "/posts/" id)
                                {:with-credentials? false
                                 :headers {"content-type" "application/json"}}))
             post (:body resp)]
@@ -25,8 +25,8 @@
         (set-state! post))))
 
 (defn update-post! [id post]
-  (go (let [auth (@app-state :auth)
-            response (<! (http/put (str api-uri "/posts/" id)
+  (go (let [auth @(rf/subscribe [:auth])
+            response (<! (http/put (str config/api-uri "/posts/" id)
                                    {:with-credentials? false
                                     :headers {"content-type" "application/json"
                                               "auth-code" auth}
@@ -36,8 +36,8 @@
         (set-state! post))))
 
 (defn create-post! [post]
-  (go (let [auth (@app-state :auth)
-            response (<! (http/post (str api-uri "/posts")
+  (go (let [auth @(rf/subscribe [:auth])
+            response (<! (http/post (str config/api-uri "/posts")
                                     {:with-credentials? false
                                      :headers {"content-type" "application/json"
                                                "auth-code" auth}
@@ -97,7 +97,7 @@
   (if id
     (fetch-post! id)
     (set-state! (map->Post {})))
-  (let [auth (:auth @app-state)]
+  (let [auth @(rf/subscribe [:auth])]
     (fn []
       (if auth
         [:div

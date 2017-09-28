@@ -12,7 +12,7 @@
                  [ring/ring-json "0.4.0"]
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
                  [cheshire "5.7.1"]
-                 [reagent "0.6.2"]
+                 [re-frame "0.10.1"]
                  [cljs-http "0.1.43"]
                  [ring-cors "0.1.11"]
                  [secretary "1.2.3"]
@@ -24,22 +24,29 @@
   :plugins [[lein-ring "0.9.7"]
             [lein-figwheel "0.5.10"]
             [lein-cljsbuild "1.1.6"]]
+  :source-paths ["src/clj"]
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]
                         :figwheel true
-                        :compiler {:main "cljs.forest-community-blog.core"
+                        :compiler {:main "forest-community-blog.core"
                                    :asset-path "js/out"
                                    :output-to "resources/public/js/main.js"
-                                   :output-dir "resources/public/js/out"}}
+                                   :output-dir "resources/public/js/out"
+                                   :foreign-libs [{:file "https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.4.0/wavesurfer.min.js"
+                                                   :provides ["foreign-js.wavesurfer"]}]
+                                   :preloads [devtools.preload]}}
                        {:id "prod"
                         :source-paths ["src/cljs"]
-                        :compiler {:main "cljs.forest-community-blog.core"
+                        :compiler {:main "forest-community-blog.core"
                                    :optimizations :advanced
                                    :output-to "target/static/public/js/main.js"
-                                   :closure-defines {cljs.forest-community-blog.cfg/api-uri "http://forest-community.org/api"}}}]}
+                                   :closure-defines {forest-community-blog.config/api-uri "http://forest-community.org/api"
+                                                     goog.DEBUG false}}}]}
   :ring {:handler forest-community-blog.handler/app}
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                                  [ring/ring-mock "0.3.0"]]}}
+                                  [ring/ring-mock "0.3.0"]
+                                  [binaryage/devtools "0.9.4"]
+                                  [re-frisk "0.5.0"]]}}
   :jar-name "server.jar"
   :uberjar-name "server-standalone.jar"
   :aliases {"migrate"  ["run" "-m" "forest-community-blog.db" "migrate"]

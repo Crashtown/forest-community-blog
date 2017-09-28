@@ -1,5 +1,5 @@
-(ns cljs.forest-community-blog.components.navigation
-  (:require [cljs.forest-community-blog.routes :as routes]))
+(ns forest-community-blog.components.navigation
+  (:require [forest-community-blog.routes :as routes]))
 
 (defn navigation []
   [:nav.navbar.navbar-inverse.navbar-fixed-top {:role "navigation"}

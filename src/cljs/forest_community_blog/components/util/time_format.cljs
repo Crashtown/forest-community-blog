@@ -1,4 +1,4 @@
-(ns cljs.forest-community-blog.components.util.time-format)
+(ns forest-community-blog.components.util.time-format)
 
 (def months
   ["January", "February", "March",

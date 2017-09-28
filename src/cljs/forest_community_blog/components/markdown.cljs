@@ -1,4 +1,4 @@
-(ns cljs.forest-community-blog.components.markdown
+(ns forest-community-blog.components.markdown
   (:require [reagent.core :as r]))
 
 (defn markdown-render [content]
