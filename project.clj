@@ -8,6 +8,8 @@
                  [org.clojure/tools.nrepl "0.2.12"]
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [compojure "1.5.1"]
+                 [ring/ring-core "1.6.3"]
+                 [ring/ring-jetty-adapter "1.6.3"]
                  [ring/ring-defaults "0.2.1"]
                  [ring/ring-json "0.4.0"]
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
@@ -21,11 +23,13 @@
                  [ragtime "0.6.0"]
                  [cljsjs/bootstrap "3.3.6-1"]
                  [cljsjs/marked "0.3.5-0"]
-                 [cljsjs/highlight "9.12.0-0"]]
+                 [cljsjs/highlight "9.12.0-0"]
+                 [figwheel-sidecar "0.5.14"]]
   :plugins [[lein-ring "0.9.7"]
-            [lein-figwheel "0.5.10"]
-            [lein-cljsbuild "1.1.6"]]
-  :source-paths ["src/clj"]
+            [lein-cljsbuild "1.1.6"]
+            [deraen/lein-sass4clj "0.3.1"]]
+  :source-paths ["src/clj"
+                 "src/dev"]
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]
                         :figwheel true
@@ -48,6 +52,9 @@
                                   [ring/ring-mock "0.3.0"]
                                   [binaryage/devtools "0.9.4"]
                                   [re-frisk "0.5.0"]]}}
+  :sass {:target-path "resources/public/css"
+         :source-paths ["resources/public/sass"
+                        "src/sass"]}
   :jar-name "server.jar"
   :uberjar-name "server-standalone.jar"
   :aliases {"migrate"  ["run" "-m" "forest-community-blog.db" "migrate"]
