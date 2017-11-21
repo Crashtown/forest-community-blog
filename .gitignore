@@ -25,3 +25,7 @@ tramp
 
 ### Ansible ###
 *.retry
+
+### Cursive
+/.idea
+forest-community-blog.iml
